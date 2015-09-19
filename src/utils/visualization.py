@@ -6,27 +6,6 @@ import matplotlib.pyplot as plt
 import scipy.misc 
 import copy
 
-
-def save_datablob_to_file(datablob,filename,PIXEL_MEANS):
-   img=datablob[:,:,0:3]
-   save_image_from_array(img+PIXEL_MEANS,"./"+filename+"img.png")
-   shape=datablob.shape
-   nmaps=shape[2]-3
-   for i in range(0,nmaps):
-     map=datablob[:,:,2+i+1:2+i+2]
-     #print("map.shape:",map.shape,"img.shape:",img.shape)
-     #exit(1)
-     imgmap=(img+PIXEL_MEANS+255*np.dstack((map,map,map)))/2 
-     save_image_from_array(imgmap,"./"+filename+"map"+str(i)+".png")
-
-
-def save_image_from_array(img,filename):
-  imgshow = copy.deepcopy(img)
-  imgshow = imgshow[:,:,::-1]
-  imgshow = Image.fromarray(imgshow.astype(np.uint8))
-  imgshow.save(filename)
-  
-
 def makeGaussian(size, fwhm = 3, center=None):
     """ 
 			Make a square gaussian kernel.
@@ -83,5 +62,67 @@ def draw_pts_onimg(img,kpts):
 	#img[int(kpts[0,i]-3):int(kpts[0,i]-3),int(kpts[1,i]-3):int(kpts[1,i]-3)]=cols[i,c]
   return img
 
+def plot_bbox(bbox):
+    #print("bbox:",bbox,"shape:",bbox.shape,bbox[[0,2,2,0,0]])
+    v=np.vstack((bbox[[0,2,2,0,0]], bbox[[1,1,3,3,1]]))
+    #print("v:",v,"v.shape:",v.shape)
+    plt.plot(v[0,:], v[1,:],'r-')
+   
+#def plot_im(im,kpts_coords):
+  #plt.imshow(im)
+  #plt.plot(kpts_coords[0,:], kpts_coords[1,:],'ro')
+  ##larm
+  #plt.plot(kpts_coords[0,[0,1]], kpts_coords[1,[0,1]],'b-',linewidth=3)
+  #plt.plot(kpts_coords[0,[1,2]], kpts_coords[1,[1,2]],'b-',linewidth=3)
+  ##rlarm
+  #plt.plot(kpts_coords[0,[3,4]], kpts_coords[1,[3,4]],'g-',linewidth=3)
+  #plt.plot(kpts_coords[0,[4,5]], kpts_coords[1,[4,5]],'g-',linewidth=3)
+  ##lleg
+  #plt.plot(kpts_coords[0,[6,7]], kpts_coords[1,[6,7]],'b-',linewidth=3)
+  #plt.plot(kpts_coords[0,[7,8]], kpts_coords[1,[7,8]],'b-',linewidth=3)
+  ##rleg
+  #plt.plot(kpts_coords[0,[9,10]], kpts_coords[1,[9,10]],'g-',linewidth=3)
+  #plt.plot(kpts_coords[0,[10,11]], kpts_coords[1,[10,11]],'g-',linewidth=3)
+  
+  #plt.plot(kpts_coords[0,[0,3]], kpts_coords[1,[0,3]],'r-',linewidth=3)
+  ##plt.plot(kpts_coords[0,[0,6]], kpts_coords[1,[0,6]],'r-',linewidth=3)
+  #plt.plot(kpts_coords[0,[6,9]], kpts_coords[1,[6,9]],'r-',linewidth=3)
+  ##plt.plot(kpts_coords[0,[3,9]], kpts_coords[1,[3,9]],'r-',linewidth=3)
+  #plt.plot(np.array([np.mean(kpts_coords[0,[0,3]]), np.mean(kpts_coords[0,[6,9]])]),
+	   #np.array([np.mean(kpts_coords[1,[0,3]]), np.mean(kpts_coords[1,[6,9]])]),'r-',linewidth=3) 
+  #plt.show()
+  
+  
+#def plot_imdata(imname,kpts_coords,bbox):
+  ##kpts_coords: 2 X num_keypoints w.r.t. the bbox upper left cporner
+  ##make keypoints coords w.r.t the image
+  #kpts_coords[0,:]=kpts_coords[0,:]+bbox[0]
+  #kpts_coords[1,:]=kpts_coords[1,:]+bbox[1]
+  #im = cv2.imread(imname)
+  #im=im[:,:,::-1]
+  #plt.imshow(im)
+  #plt.plot(kpts_coords[0,:], kpts_coords[1,:],'ro')
+  ##larm
+  #plt.plot(kpts_coords[0,[0,1]], kpts_coords[1,[0,1]],'b-',linewidth=3)
+  #plt.plot(kpts_coords[0,[1,2]], kpts_coords[1,[1,2]],'b-',linewidth=3)
+  ##rlarm
+  #plt.plot(kpts_coords[0,[3,4]], kpts_coords[1,[3,4]],'g-',linewidth=3)
+  #plt.plot(kpts_coords[0,[4,5]], kpts_coords[1,[4,5]],'g-',linewidth=3)
+  ##lleg
+  #plt.plot(kpts_coords[0,[6,7]], kpts_coords[1,[6,7]],'b-',linewidth=3)
+  #plt.plot(kpts_coords[0,[7,8]], kpts_coords[1,[7,8]],'b-',linewidth=3)
+  ##rleg
+  #plt.plot(kpts_coords[0,[9,10]], kpts_coords[1,[9,10]],'g-',linewidth=3)
+  #plt.plot(kpts_coords[0,[10,11]], kpts_coords[1,[10,11]],'g-',linewidth=3)
+  
+  #plt.plot(kpts_coords[0,[0,3]], kpts_coords[1,[0,3]],'r-',linewidth=3)
+  ##plt.plot(kpts_coords[0,[0,6]], kpts_coords[1,[0,6]],'r-',linewidth=3)
+  #plt.plot(kpts_coords[0,[6,9]], kpts_coords[1,[6,9]],'r-',linewidth=3)
+  ##plt.plot(kpts_coords[0,[3,9]], kpts_coords[1,[3,9]],'r-',linewidth=3)
+  #plt.plot(np.array([np.mean(kpts_coords[0,[0,3]]), np.mean(kpts_coords[0,[6,9]])]),
+	   #np.array([np.mean(kpts_coords[1,[0,3]]), np.mean(kpts_coords[1,[6,9]])]),'r-',linewidth=3)
+  ##bbox
+  #plot_bbox(bbox)
+    
 
 

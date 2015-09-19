@@ -10,24 +10,21 @@ import matplotlib.pyplot as plt
 import copy
 from PIL import Image
 import utils.visualization as vis
-#import visualization as vis
 
 class imdata(object):
-    def __init__(self,imname="",error_targets=[],coords_init=[],coords_target=[],coords_predicted=[],istrain=0,isflipped=0,
-		 bbox=[]):
-        '''print("coords_init:",coords_init,"imname:",imname,"coords_target:",coords_target,"bbox:",bbox,
-        "istrain:",istrain)
-	exit(1)'''
+    def __init__(self, imname="", error_targets=[],coords_init=[], 
+								 coords_target=[], coords_predicted=[], istrain=0, 
+								 isflipped=0, bbox=[]):
+
 	#TODO: ADD COORDINATE SUYSTEMS INFO 9IMAGE vs BBO)
-	self._imname=imname 
-	self._coords_init =coords_init
-	self._coords_target =coords_target
-	self._coords_predicted =coords_predicted
-	self._error_targets=error_targets
-	self._istrain=istrain
-	self._isflipped=isflipped
-	self._bbox=bbox
-    #def flip_image:
+	self._imname           = imname 
+	self._coords_init      = coords_init
+	self._coords_target    = coords_target
+	self._coords_predicted = coords_predicted
+	self._error_targets    = error_targets
+	self._istrain          = istrain
+	self._isflipped        = isflipped
+	self._bbox             = bbox
     
     def set_targetkptcoords_wrt_bbox(self):
       #the keypoints are with respect to the upper left corner of the box
@@ -306,75 +303,3 @@ class Imkptdb(object):
 	#plot_imdata(self._imdata_list[i]._imname,self._imdata_list[i]._coords_init,
 		    #self._imdata_list[i]._bbox)
    
-
-
-
-
-
-
-def plot_bbox(bbox):
-    #print("bbox:",bbox,"shape:",bbox.shape,bbox[[0,2,2,0,0]])
-    v=np.vstack((bbox[[0,2,2,0,0]], bbox[[1,1,3,3,1]]))
-    #print("v:",v,"v.shape:",v.shape)
-    plt.plot(v[0,:], v[1,:],'r-')
-   
-#def plot_im(im,kpts_coords):
-  #plt.imshow(im)
-  #plt.plot(kpts_coords[0,:], kpts_coords[1,:],'ro')
-  ##larm
-  #plt.plot(kpts_coords[0,[0,1]], kpts_coords[1,[0,1]],'b-',linewidth=3)
-  #plt.plot(kpts_coords[0,[1,2]], kpts_coords[1,[1,2]],'b-',linewidth=3)
-  ##rlarm
-  #plt.plot(kpts_coords[0,[3,4]], kpts_coords[1,[3,4]],'g-',linewidth=3)
-  #plt.plot(kpts_coords[0,[4,5]], kpts_coords[1,[4,5]],'g-',linewidth=3)
-  ##lleg
-  #plt.plot(kpts_coords[0,[6,7]], kpts_coords[1,[6,7]],'b-',linewidth=3)
-  #plt.plot(kpts_coords[0,[7,8]], kpts_coords[1,[7,8]],'b-',linewidth=3)
-  ##rleg
-  #plt.plot(kpts_coords[0,[9,10]], kpts_coords[1,[9,10]],'g-',linewidth=3)
-  #plt.plot(kpts_coords[0,[10,11]], kpts_coords[1,[10,11]],'g-',linewidth=3)
-  
-  #plt.plot(kpts_coords[0,[0,3]], kpts_coords[1,[0,3]],'r-',linewidth=3)
-  ##plt.plot(kpts_coords[0,[0,6]], kpts_coords[1,[0,6]],'r-',linewidth=3)
-  #plt.plot(kpts_coords[0,[6,9]], kpts_coords[1,[6,9]],'r-',linewidth=3)
-  ##plt.plot(kpts_coords[0,[3,9]], kpts_coords[1,[3,9]],'r-',linewidth=3)
-  #plt.plot(np.array([np.mean(kpts_coords[0,[0,3]]), np.mean(kpts_coords[0,[6,9]])]),
-	   #np.array([np.mean(kpts_coords[1,[0,3]]), np.mean(kpts_coords[1,[6,9]])]),'r-',linewidth=3) 
-  #plt.show()
-  
-  
-#def plot_imdata(imname,kpts_coords,bbox):
-  ##kpts_coords: 2 X num_keypoints w.r.t. the bbox upper left cporner
-  ##make keypoints coords w.r.t the image
-  #kpts_coords[0,:]=kpts_coords[0,:]+bbox[0]
-  #kpts_coords[1,:]=kpts_coords[1,:]+bbox[1]
-  #im = cv2.imread(imname)
-  #im=im[:,:,::-1]
-  #plt.imshow(im)
-  #plt.plot(kpts_coords[0,:], kpts_coords[1,:],'ro')
-  ##larm
-  #plt.plot(kpts_coords[0,[0,1]], kpts_coords[1,[0,1]],'b-',linewidth=3)
-  #plt.plot(kpts_coords[0,[1,2]], kpts_coords[1,[1,2]],'b-',linewidth=3)
-  ##rlarm
-  #plt.plot(kpts_coords[0,[3,4]], kpts_coords[1,[3,4]],'g-',linewidth=3)
-  #plt.plot(kpts_coords[0,[4,5]], kpts_coords[1,[4,5]],'g-',linewidth=3)
-  ##lleg
-  #plt.plot(kpts_coords[0,[6,7]], kpts_coords[1,[6,7]],'b-',linewidth=3)
-  #plt.plot(kpts_coords[0,[7,8]], kpts_coords[1,[7,8]],'b-',linewidth=3)
-  ##rleg
-  #plt.plot(kpts_coords[0,[9,10]], kpts_coords[1,[9,10]],'g-',linewidth=3)
-  #plt.plot(kpts_coords[0,[10,11]], kpts_coords[1,[10,11]],'g-',linewidth=3)
-  
-  #plt.plot(kpts_coords[0,[0,3]], kpts_coords[1,[0,3]],'r-',linewidth=3)
-  ##plt.plot(kpts_coords[0,[0,6]], kpts_coords[1,[0,6]],'r-',linewidth=3)
-  #plt.plot(kpts_coords[0,[6,9]], kpts_coords[1,[6,9]],'r-',linewidth=3)
-  ##plt.plot(kpts_coords[0,[3,9]], kpts_coords[1,[3,9]],'r-',linewidth=3)
-  #plt.plot(np.array([np.mean(kpts_coords[0,[0,3]]), np.mean(kpts_coords[0,[6,9]])]),
-	   #np.array([np.mean(kpts_coords[1,[0,3]]), np.mean(kpts_coords[1,[6,9]])]),'r-',linewidth=3)
-  ##bbox
-  #plot_bbox(bbox)
-    
-  
-  
-  
-  #plt.show()

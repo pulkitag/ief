@@ -122,32 +122,30 @@ def vis_minibatch(im_blob,  targets_blob):
 	  plt.show()
 	  
 
-       
-    
+##
+# Render the keypoints as heatmaps. 
 def render_kpts_square(kpts,gaussian_width,square_width):
-      #kpts: 2 X num_keypoints
-      # from keypoints to gaussian maps!	
-      size=kpts.shape
-      num_keypoints=size[1]
-      #print("numkeypts:",numkeypts)
-      gaussianmaps=np.ndarray((square_width,square_width,num_keypoints))
-      for i in range(0,num_keypoints):
-	gaussianmaps[:,:,i]=vis.makeGaussian(square_width,
-				      gaussian_width, 
-				      kpts[:,i])-cfg.PIXEL_MEAN
-	#plt.imshow(gaussianmaps[:,:,i])
-	#plt.show()
+	#kpts: 2 X num_keypoints
+	# from keypoints to gaussian maps!	
+	size          = kpts.shape
+	num_keypoints = size[1]
+	gaussianmaps  = np.ndarray((square_width,square_width,num_keypoints))
+	for i in range(0,num_keypoints):
+		gaussianmaps[:,:,i] = vis.makeGaussian(square_width,
+														gaussian_width, 
+														kpts[:,i]) - cfg.PIXEL_MEAN
 	if 0:
-	  gaussianmap=gaussianmaps[:,:,i]+cfg.PIXEL_MEAN
-	  result = Image.fromarray((gaussianmap).astype(np.uint8))
-	  result.save('./plots/gaussianmap'+str(i)+'.png')
-	  imgdraw=vis.draw_pts_onimg(gaussianmap,kpts)
-	  result = Image.fromarray((imgdraw).astype(np.uint8))
-	  result.save('./plots/imdraw'+str(i)+'.png')
-      #exit(1)
-      return gaussianmaps
+		gaussianmap=gaussianmaps[:,:,i]+cfg.PIXEL_MEAN
+		result = Image.fromarray((gaussianmap).astype(np.uint8))
+		result.save('./plots/gaussianmap'+str(i)+'.png')
+		imgdraw=vis.draw_pts_onimg(gaussianmap,kpts)
+		result = Image.fromarray((imgdraw).astype(np.uint8))
+		result.save('./plots/imdraw'+str(i)+'.png')
+	return gaussianmaps
 
 
+##
+# Concatenates the image with the keypoints to create the input blob. 
 def get_im_inout(imname,bbox,kpts,gaussian_width):
 	#tic = time.clock() 
 	im = cv2.imread(imname) 
