@@ -1,10 +1,3 @@
-# --------------------------------------------------------
-# Fast R-CNN
-# Copyright (c) 2015 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Ross Girshick
-# --------------------------------------------------------
-
 """Fast R-CNN config system.
 
 This file specifies default config options for Fast R-CNN. You should not
@@ -27,6 +20,16 @@ __C = edict()
 #   from fast_rcnn_config import cfg
 cfg = __C
 
+#DataSet Name
+__C.DATASET = 'mpii'
+
+#Paths
+__C.PATHS.BASE_DIR  = osp.join('/work5/pulkitag/', __C.DATASET)
+__C.PATHS.SET_FILE  = osp.join(__C.PATHS.BASE_DIR, 'ImageSets',
+															 'Main', '%s.txt')
+__C.PATHS.DATA_FILE = osp.join(__C.PATHS.BASE_DIR, 'Annotations',
+															 '%s.mat')
+															 
 #
 # Training options
 #

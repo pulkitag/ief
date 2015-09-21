@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from PIL import Image
 import matplotlib.pyplot as plt
-import scipy.misc 
+import scipy.misc as scm 
 import copy
 import time
 
@@ -31,7 +31,7 @@ def resize(im, sz):
 			sz  : tuple (y,x)  
 	'''
 	sz   = sz.astype(int)
-  img  = scipy.misc.imresize(im, (sz[0],sz[1]), 'bilinear')
+  img  = scm.imresize(im, (sz[0],sz[1]), 'bilinear')
   return img
 
 
@@ -114,7 +114,7 @@ def crop_with_warp(cfg, im, bbox):
 	bbox= np.array([x1,y1,x2,y2])
 	#Crop the bboc 
 	cv_cropped_img = im[int(bbox[1]):int(bbox[3]+1), int(bbox[0]):int(bbox[2]+1),:]
-	cv_cropped_img_resized = scipy.misc.imresize(cv_cropped_img, 
+	cv_cropped_img_resized = scm.imresize(cv_cropped_img, 
 													 (int(cv_crop_size_height),int(cv_crop_size_width),3), 
 													 'bilinear')
 	#Prepare the image
@@ -135,3 +135,49 @@ def crop_with_warp(cfg, im, bbox):
 		print(imgshow)
 	return img
 
+
+##
+# Crop the image 
+def centered_crop(cfg, im, pt, scale):
+	'''
+		Crop the image im with center at pt at scale "scale"
+		Input Arguments:
+			pt: x,y
+			cfg.CROP_SIZE: the i/p size of the image to the n/w		
+			scale: Relative to the image how big of a box should be cropped
+	'''
+	if im.ndim==3:
+		h,w,_ = im.shape
+	else:
+		h,w = im.shape
+
+	#Chose the smaller side	
+	side = min(w, h) * scale
+	x,y  = pt
+	x    = max(x,0)
+	y    = max(y,0)
+
+	#Find the sides of the bounding box
+	x1 = np.floor(x - side/2.0)
+	x2 = np.ceil(x + side/2.0)
+	y1 = np.floor(y - side/2.0)
+	y2 = np.ceil(y + side/2.0)
+
+	#Determine the padding
+	pdX1 = abs(min(0, x1))
+	pdX2 = abs(max(0, x2 - w))
+	pdY1 = abs(min(0, y1))
+	pdY2 = abs(max(0, y2 - h))
+
+	pdImg = copy.deepcopy(im)
+	if pdImg.ndim==2:
+		pdImg = np.pad(pdImg, ((pdY1, pdY2), (pdX1, pdX2)),
+									 'constant', constant_values=(0,0))	
+	else:
+		pdImg = np.pad(pdImg, ((pdY1, pdY2), (pdX1, pdX2), (0,0)),
+									 'constant', constant_values=(0,0))
+
+	pdImg = scm.imresize(pdImg, (cfg.CROP_SIZE, cfg.CROP_SIZE))
+	return pdImg	
+		
+		
