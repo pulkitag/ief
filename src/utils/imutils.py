@@ -19,8 +19,8 @@ def crop(im, bbox):
 	w       = bbox[2] - bbox[0]
 	h       = bbox[3] - bbox[1]
 	assert w <= im_size[0] and h <= im_size[1], 'bbox is bigger than image'
-  im_crp  = im[bbox[1]:bbox[3] + 1,  bbox[0]:bbox[2]+1, :]
-  return im_crp
+	im_crp  = im[bbox[1]:bbox[3] + 1,  bbox[0]:bbox[2]+1, :]
+	return im_crp
 
   
 def resize(im, sz):
@@ -31,8 +31,8 @@ def resize(im, sz):
 			sz  : tuple (y,x)  
 	'''
 	sz   = sz.astype(int)
-  img  = scm.imresize(im, (sz[0],sz[1]), 'bilinear')
-  return img
+	img  = scm.imresize(im, (sz[0],sz[1]), 'bilinear')
+	return img
 
 
 def crop_with_warp(cfg, im, bbox):
@@ -138,12 +138,12 @@ def crop_with_warp(cfg, im, bbox):
 
 ##
 # Crop the image 
-def centered_crop(cfg, im, pt, scale):
+def centered_crop(crpSz, im, pt, scale):
 	'''
 		Crop the image im with center at pt at scale "scale"
 		Input Arguments:
 			pt: x,y
-			cfg.CROP_SIZE: the i/p size of the image to the n/w		
+			crpSz: the i/p size of the image to the n/w		
 			scale: Relative to the image how big of a box should be cropped
 	'''
 	if im.ndim==3:
@@ -163,12 +163,21 @@ def centered_crop(cfg, im, pt, scale):
 	y1 = np.floor(y - side/2.0)
 	y2 = np.ceil(y + side/2.0)
 
-	#Determine the padding
-	pdX1 = abs(min(0, x1))
-	pdX2 = abs(max(0, x2 - w))
-	pdY1 = abs(min(0, y1))
-	pdY2 = abs(max(0, y2 - h))
+	pdImg, _ = pad_to_fit(im, (x1,x2,y1,y2))
+	pdImg = scm.imresize(pdImg, (crpSz, crpSz))
+	return pdImg	
 
+##
+#Figure out if the image needs to be padded
+# and pad if required		
+def pad_to_fit(im, imRange):
+	x1, x2, y1, y2 = imRange
+	#Determine the padding
+	h, w, _ = im.shape
+	pdX1   = abs(min(0, x1))
+	pdY1   = abs(min(0, y1))
+	pdX2   = abs(max(0, x2 - w))
+	pdY2   = abs(max(0, y2 - h))
 	pdImg = copy.deepcopy(im)
 	if pdImg.ndim==2:
 		pdImg = np.pad(pdImg, ((pdY1, pdY2), (pdX1, pdX2)),
@@ -176,8 +185,6 @@ def centered_crop(cfg, im, pt, scale):
 	else:
 		pdImg = np.pad(pdImg, ((pdY1, pdY2), (pdX1, pdX2), (0,0)),
 									 'constant', constant_values=(0,0))
+	return pdImg, (pdX1, pdX2, pdY1, pdY2)	
 
-	pdImg = scm.imresize(pdImg, (cfg.CROP_SIZE, cfg.CROP_SIZE))
-	return pdImg	
-		
-		
+	

@@ -8,7 +8,7 @@ paths = get_paths();
 %6. Scale of the person
 %%
 
-%annDat   = load(paths.annFile);
+annDat   = load(paths.annFile);
 annList  = annDat.RELEASE.annolist;
 
 setNames = {'train','val','test'}; 
@@ -75,10 +75,12 @@ for s=1:1:length(setNames)
 		objPosxy = objPosxy(1:nObj,:);
 		scale    = scale(1:nObj);
 		kpts     = kpts(1:nObj,:,:);
-		kptsVis  = kptsVis(1:nObj);
+		kptsVis  = kptsVis(1:nObj,:);
 		setName  = setNames{s};
+		imgName  = fullfile(paths.imDir, imgName);
+		disp(imgName);
 		save(outName, 'imgName', 'nObj', 'objPosxy', 'scale', 'kpts',...
-									'kptsVis', 'setName');
+									'kptsVis', 'setName', '-v7.3');
 		if mod(idx,100)==1
 			disp(idx);
 		end

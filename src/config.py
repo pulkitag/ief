@@ -1,6 +1,6 @@
-"""Fast R-CNN config system.
+"""IEF config system.
 
-This file specifies default config options for Fast R-CNN. You should not
+This file specifies default config options for IEF. You should not
 change values in this file. Instead, you should write a config file (in yaml)
 and use cfg_from_file(yaml_file) to load it and override the default options.
 
@@ -24,16 +24,31 @@ cfg = __C
 __C.DATASET = 'mpii'
 
 #Paths
+__C.PATHS = edict()
 __C.PATHS.BASE_DIR  = osp.join('/work5/pulkitag/', __C.DATASET)
 __C.PATHS.SET_FILE  = osp.join(__C.PATHS.BASE_DIR, 'ImageSets',
 															 'Main', '%s.txt')
 __C.PATHS.DATA_FILE = osp.join(__C.PATHS.BASE_DIR, 'Annotations',
 															 '%s.mat')
-															 
+
+#For storing model
+__C.PATHS.MODEL_DIR   = '/work4/pulkitag-code/pkgs/ief/IEF/src/models'
+__C.SCALE_MODEL = edict() 							
+#The path of the model for determining the scale								 
+__C.SCALE_MODEL.NET   = osp.join(__C.PATHS.MODEL_DIR,
+													  'scalesel-vggs-epoch-14-convert.caffemodel')
+__C.SCALE_MODEL.PROTO = osp.join(__C.PATHS.MODEL_DIR,
+														'vgg_s.prototxt') 
+#The path of the model for estimating the pose
+__C.POSE_MODEL = edict()
+__C.POSE_MODEL.NET = osp.join(__C.PATHS.MODEL_DIR,
+													 'vgg16-epoch12-convert.caffemodel')
+__C.POSE_MODEL.PROTO = osp.join(__C.PATHS.MODEL_DIR,
+													 'vgg_16_base.prototxt')
+
 #
 # Training options
 #
-
 __C.TRAIN = edict()
 
 # Scales to use during training (can list multiple scales)
@@ -47,22 +62,15 @@ __C.TRAIN = edict()
 #__C.TRAIN.IMS_PER_BATCH = 5
 __C.CROP_SIZE = 224
 __C.GAUSSIAN_WIDTH = 5
+
 # Minibatch size (number of regions of interest [ROIs])
 __C.TRAIN.BATCH_SIZE = 128
 
+#The lambdas for determining the optimal scale
+__C.SCALE_LAMBDA = [1.4142, 1.1892, 1, 0.8409, 0.7071, 0.5946, 0.5, 0.4204, 0.3536,  0.2973] 
 
   #finput = h5py.File('./mean_pose.hdf5','pose')
 #__C.TRAIN.MEAN_POSE=  = finput['mean_pose']
-# Fraction of minibatch that is labeled foreground (i.e. class > 0)
-#__C.TRAIN.FG_FRACTION = 0.25
-
-# Overlap threshold for a ROI to be considered foreground (if >= FG_THRESH)
-#__C.TRAIN.FG_THRESH = 0.5
-
-# Overlap threshold for a ROI to be considered background (class = 0 if
-# overlap in [LO, HI))
-#__C.TRAIN.BG_THRESH_HI = 0.5
-#__C.TRAIN.BG_THRESH_LO = 0.1
 
 # Use horizontally-flipped images during training?
 __C.TRAIN.USE_FLIPPED = False

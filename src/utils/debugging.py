@@ -7,18 +7,25 @@
 # Written by Joao Carreira, Pulkit Agrawal and Katerina Fragkiadki
 # --------------------------------------------------------
 
-import imkptdb
 import pprint
 import numpy as np
 import sys
+from utils import imutils as imu
+from utils import imdata as imd
+from utils import io
+from config import cfg
 
-def main():
- data_file='/data0/katef/Code/IEF/matlabcode/data_file_catalin.hdf5'
- imname_file='/data0/katef/Code/IEF/matlabcode/imnames_file_catalin.txt'
- catalin_imkptdb=imkptdb.Imkptdb('catalin_2D')
- catalin_imkptdb.load_from_files(imname_file,data_file)
- print("num images:",catalin_imkptdb.num_images)
- return
+def get_mpii_obj(num=0):
+	ioDat    = io.DataSet(cfg)
+	trnNames = ioDat.get_set_files('train')
+	kpt      = imd.ImKPtDataMpii.from_file(trnNames[num])
+	return kpt
 
-if __name__ == '__main__':
-    main()
+def vis_mpii(num=0):
+	ioDat    = io.DataSet(cfg)
+	trnNames = ioDat.get_set_files('train')
+	kpt      = imd.ImKPtDataMpii.from_file(trnNames[num])
+	kpt.plot() 
+
+
+
