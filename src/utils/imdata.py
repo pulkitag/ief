@@ -131,6 +131,16 @@ class ImKPtDataMpii(ImKPtData):
 		plt.ion()
 		plt.imshow(pIm)
 
+	def get_im_with_point(self, pt, kPtCol='r', kPtSz=11, ptSz=21):
+		pIm  = copy.copy(self.im_)
+		x, y = pt
+		x1 = max(0,np.min(x - ptSz/2))
+		y1 = max(0,np.min(y - ptSz/2))
+		x2 = min(pIm.shape[1],np.max(x + ptSz/2))
+		y2 = min(pIm.shape[0],np.max(y + ptSz/2))
+		pIm[y1:y2, x1:x2, 0] = 255	
+		return pIm
+	
 	def crop_at_scale(self, scale=1.2, cropSz=224):
 		crpIm = []
 		for n in range(self.N_):

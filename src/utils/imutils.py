@@ -163,7 +163,11 @@ def centered_crop(crpSz, im, pt, scale):
 	y1 = np.floor(y - side/2.0)
 	y2 = np.ceil(y + side/2.0)
 
-	pdImg, _ = pad_to_fit(im, (x1,x2,y1,y2))
+	pdImg, pd = pad_to_fit(im, (x1,x2,y1,y2))
+	pdX1, pdX2, pdY1, pdY2 = pd
+	x1, x2 = x1+pdX1, x2+pdX1
+	y1, y2 = y1+pdY1, y2+pdY1
+	pdImg  = pdImg[y1:y2,x1:x2,:]
 	pdImg = scm.imresize(pdImg, (crpSz, crpSz))
 	return pdImg	
 
