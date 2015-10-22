@@ -21,10 +21,7 @@ def test(net):
 	ioDat     = io.DataSet(cfg)
 	testNames = ioDat.get_set_files('test')
 	opScale   = []
-	for num in range(len(testNames)):
-		print (num)
-		if np.mod(num,100)==1:
-			print (num)
+	for num in range(10):
 		kpt    = imd.ImKPtDataMpii.from_file(testNames[num])
 		N      = kpt.N_ #Number of people
 		cropIm = []
@@ -49,7 +46,7 @@ def vis_scale(net, scales, isPlot=True):
 	ax2.set_title('Scale Crop')
 	ioDat     = io.DataSet(cfg)
 	testNames = ioDat.get_set_files('test')
-	gtScaleDist, pdScaleDist = [], []
+	gtScale, predScale = [], []
 	for num in range(10):
 		kpt    = imd.ImKPtDataMpii.from_file(testNames[num])
 		N      = kpt.N_ #Number of people
@@ -61,16 +58,13 @@ def vis_scale(net, scales, isPlot=True):
 			pIm = kpt.get_im_with_point(kpt.bodyPos_[n,:], ptSz=51)
 			h, w, ch = pIm.shape
 			side     = min(h,w)
-			if len(kpt.bodyScale_[0]) > 0:
-				#Find gtscale distance
-				gtScale = kpt.bodyScale_[0][n] * (200.0 / side)
-				gtDist  = np.min(np.abs(np.array(LIST_SCALES) - gtScale))
-				gtScaleDist.append(np.exp(-gtDist))
-				pdScaleDist.append(np.exp(-np.abs(scales[num][n] - gtScale)))
-			if isPlot:	
-				ax1.imshow(pIm)
-				plt.draw()
-				inp = raw_input()	
-				if inp=='q':
-					return
-	return np.array(gtScaleDist), np.array(pdScaleDist)
+			#Find gtscale distance
+			gtScale = kpt.bodyScale_[n][0] * (200.0 / side)
+			gtDist  = np.min(np.abs(np.array(LIST_SCALES) - gtScale))
+			gtScales.append(np.exp(-gtDist))
+			predScale.append(scales[num][n])	
+			ax1.imshow(pIm)
+			plt.draw()
+			inp = raw_input()	
+			if inp=='q':
+				return
