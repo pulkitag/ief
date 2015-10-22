@@ -9,7 +9,52 @@ from IEF.config import cfg
 from render_data_layer.minibatch import get_minibatch
 import numpy as np
 import yaml
+import argparse
 from multiprocessing import Process, Queue
+
+from utils import imdata as imd
+from utils import io
+
+class ScaleSelectDataLayer(caffe.Layer):
+	'''
+		Layer for performing scale selection
+	'''
+	@classmethod
+  def parse_args(cls, argsStr):
+    parser = argparse.ArgumentParser(description='ScaleSelectLayer')
+    parser.add_argument('--scale_min', default=0.1, type=float)
+    parser.add_argument('--scale_num', default=5, type=int)
+		parser.add_argument('--scale_factor', default=2, type=float)
+		parser.add_argument('--mean_file', default='',type=str)
+    args   = parser.parse_args(argsStr.split())
+    print('Using Config:')
+    pprint.pprint(args)
+    return args
+
+	def setup(self, bottom, top):
+		#Parse the parameters
+		layer_params = ScaleSelectDataLayer.parse_args(self.param_str)
+		self.layer_params  = layer_params
+		#Form the scales that need to be extracted
+		scales = [np.power(layer_params.scale_min * np.power(layer_params.scale_factor,i)\
+							for i in range(layer_params.scale_num)]
+		self.im_scales = scales
+		#Read the mean file if provided
+
+		#Load the examples
+		ioDat = io.DataSet(cfg)
+		self.trnNames = ioDat.get_set_files('train')
+
+	def reshape(self, bottom, top):
+		pass
+		#top[0].reshape()
+
+	def forward(self, bottom, top):
+		pass
+
+	def backward(self, top, propagate_down, bottom):
+		pass
+
 
 class PoseDataLayer(caffe.Layer):
     """IEF layer used for training Human Pose Estimation"""
