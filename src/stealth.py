@@ -1,12 +1,16 @@
 import my_pycaffe as mp
 from utils import imdata as imd
 from utils import io
+from utils import visualization as vis
 from config import cfg
 from os import path as osp
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import copy
+#import matlab.engine
+#import matlab
+#meng = matlab.engine.start_matlab()
 
 LIST_SCALES = [1.4142, 1.1892, 1, 0.8409, 0.7071, 0.5946, 0.5, 0.4204, 0.3536,  0.2973]  
 
@@ -38,39 +42,97 @@ def predict_pose(setName='val'):
 	#Read the scales
 	scaleFile = 'tmp-ief-scale-%s.pkl' % setName
 	data      = pickle.load(open(scaleFile,'r'))
-	fNames, scales = data['fNames'], data['scale']
+	fNames, scales = data['fNames'][0:25], data['scale'][0:25]
 	#Get the network
 	net, metaData  = get_ief_net()
 	seedPose       = metaData['seedPose']
 	mxStepSz       = metaData['mxStepNorm'] 
 	#Go over the images and predict poses	
-	allPoses = []
+	allPoses, allIms, allGrs = [], [], []
 	for num, sc in zip(range(len(fNames)), scales):
 		print (num)
 		kpt    = imd.ImKPtDataMpii.from_file(fNames[num])
 		N      = kpt.N_ #Number of people
 		ops = []
+		ims = []
+		grs = []
 		for  n in range(N):
 			cropIm = kpt.crop_at_scale(scale=sc[n], cropSz=224)
 			imData = np.zeros((1,224,224,3)).astype(np.float32)
 			imData[0,:,:,:] = cropIm[n]
 			currPose        = np.zeros((1,17,2,1)).astype(np.float32)
 			for i in range(17):
-				currPose[0,i,0] = seedPose[0,i]
-				currPose[0,i,1] = seedPose[1,i]
+				currPose[0,i,0] = copy.deepcopy(seedPose[0,i])
+				currPose[0,i,1] = copy.deepcopy(seedPose[1,i])
 			labels = np.zeros((1,16,2,1)).astype(np.float32)
-			poseSteps = []
+			poseSteps, grSteps = [], []
+			poseSteps.append(copy.deepcopy(currPose))
 			for step in range(4):
-				opDat    = net.forward(blobs=['cls3_fc'], image=imData, kp_pos=currPose, label=labels)
-				opDat    = opDat['cls3_fc'].squeeze()
+				opDat    = net.forward(blobs=['cls3_fc', 'rendering'], image=imData,
+									 kp_pos=copy.deepcopy(currPose), label=labels)
+				kPred    = copy.deepcopy(opDat['cls3_fc'].squeeze())
+				gRender  = copy.deepcopy(opDat['rendering'].squeeze())
+				grSteps.append(gRender)
 				for i in range(16):
-					dx, dy = opDat[i], opDat[16 + i]
+					dx, dy = kPred[i], kPred[16 + i]
 					currPose[0,i,0] = currPose[0,i,0] + mxStepSz * dx
 					currPose[0,i,1] = currPose[0,i,1] + mxStepSz * dy
 				poseSteps.append(copy.deepcopy(currPose))
 			ops.append(poseSteps)
+			ims.append(cropIm[n])
+			grs.append(grSteps)
 		allPoses.append(ops)
-	return fNames, allPoses 
+		allIms.append(ims)
+		allGrs.append(grs)
+	return fNames, allPoses, scales, allIms, allGrs
+
+def save_predictions(setName='val'):
+	svName = 'tmp-ief-pose-%s.pkl' % setName
+	fNames, allPoses, scales, allIms, allGrs = predict_pose(setName=setName)
+	pickle.dump({'fNames': fNames, 'allPoses': allPoses, 
+							 'scales': scales, 'allIms': allIms, 'allGrs': allGrs}, 
+								open(svName, 'w')) 
+
+def plot_predictions(setName='val'):
+	plt.close('all')
+	figRen = plt.figure()
+	figVis = plt.figure()
+	plt.ion()
+	#Form the axes for keypoint visualization
+	ax    = []
+	count = 1
+	for i in range(2):
+		for j in range(2):
+			ax.append(figVis.add_subplot(2, 2, count))
+			count += 1
+	#Form the axes for gaussian visualization
+	axRen = []
+	for i in range(16):
+		axRen.append(figRen.add_subplot(4,4,i+1))
+
+	fName = 'tmp-ief-pose-%s.pkl' % setName
+	dat   = pickle.load(open(fName, 'r'))
+	allPoses, allIms, allGrs = dat['allPoses'], dat['allIms'], dat['allGrs']
+	for ims, poses, grs in zip(allIms, allPoses, allGrs):
+		for n in range(len(ims)):
+			im   = ims[n]
+			gr   = grs[n]
+			pSeq = poses[n]
+			#Plot the stick figure
+			plt.figure(figVis.number) 							
+			for i in range(4):
+				print im.shape, pSeq[i].shape
+				vis.plot_pose_stickmodel(im, pSeq[i].squeeze().transpose((1,0)), ax[i])
+				plt.draw()
+				plt.show()
+			#Plot the gaussian renderings
+			plt.figure(figRen.number) 							
+			vis.plot_gauss_maps(gr[0], ax=axRen)
+			ip = raw_input()
+			if ip == 'q':
+				return
+			for i in range(4):
+				ax[i].clear()
 
 
 def predict_scale(net, setName='val'):
