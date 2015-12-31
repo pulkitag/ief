@@ -1,9 +1,9 @@
 function [paths] = get_paths()
 
 %All the annotations
-paths.annFile = '/home/carreira/mpii/mpii_human_pose_v1_u12_1/mpii_human_pose_v1_u12_1.mat';
+paths.annFile = 'data/mpii_human_pose_v1_u12_1.mat';
 %Validation annotation
-paths.valAnnFile = '/home/carreira/mpii/tompson/mpii_predictions/data/detections.mat';
+paths.valAnnFile = 'data/tompson_detections.mat';
 
 baseDir = '/work5/pulkitag/mpii/';
 %Raw images

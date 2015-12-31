@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import copy
+import scipy.io as sio
 #import matlab.engine
 #import matlab
 #meng = matlab.engine.start_matlab()
@@ -19,8 +20,8 @@ def get_scale_net():
 	netName  = osp.join(modelDir, 'scalesel-vggs-epoch-14-convert.caffemodel')
 	defFile  = osp.join(modelDir, 'vgg_s.prototxt')
 	net      = mp.MyNet(defFile, netName, deviceId=1)
-	#Set preprocessing in the net
-	net.set_preprocess(meanDat='/data1/pulkitag/caffe_models/ilsvrc2012_mean.binaryproto') 
+	#Set preprocessing in the net #Mean is in BGR because of channel swap
+	net.set_preprocess(meanDat=(115.2254, 123.9648, 124.2966)) 
 	return net
 
 def get_ief_net():
@@ -135,10 +136,10 @@ def plot_predictions(setName='val'):
 				ax[i].clear()
 
 
-def predict_scale(net, setName='val'):
+def predict_scale(net, setName='val', cropSz=256):
 	ioDat     = io.DataSet(cfg)
 	testNames = ioDat.get_set_files(setName)
-	testNames = testNames[0:100]
+	#testNames = testNames[0:100]
 	opScale   = []
 	for num in range(len(testNames)):
 		print (num)
@@ -148,10 +149,10 @@ def predict_scale(net, setName='val'):
 		N      = kpt.N_ #Number of people
 		cropIm = []
 		for s in LIST_SCALES:
-			cropIm.append(kpt.crop_at_scale(scale=s, cropSz=224))
+			cropIm.append(kpt.crop_at_scale(scale=s, cropSz=cropSz))
 		ops = []
 		for  n in range(N):
-			imData = np.zeros((len(LIST_SCALES),224, 224,3))
+			imData = np.zeros((len(LIST_SCALES),cropSz, cropSz, 3))
 			for i,s in enumerate(LIST_SCALES):
 				imData[i,:,:,:] = cropIm[i][n]
 			opDat    = net.forward(blobs=['fc-op'], data=imData)
@@ -200,3 +201,23 @@ def vis_scale(net, scales, isPlot=True):
 				if inp=='q':
 					return
 	return np.array(gtScaleDist), np.array(pdScaleDist)
+
+##
+#Compare the scale predictions against that from matconvnet
+def compare_scale():
+	fName = 'tmp/val_scores_scale.mat'
+	dat   = sio.loadmat(fName)
+	pdScores = dat['all_pred']
+	pSc      = np.zeros((2958,10))
+	for  i in range(2958):
+		pSc[i,:] = pdScores[0][range(i,29580,2958)].flatten()
+	idx       = np.argmax(pSc, axis=1)
+	matScales = [LIST_SCALES[i] for i in idx]
+	#Load the python scales
+	pyName    = 'tmp-ief-scale-val.pkl'
+	pyData    = pickle.load(open(pyName, 'r'))
+	scales    = pyData['scale']
+	pyScales  = [sc for sublist in scales for sc in sublist]
+	matScales = matScales[0:len(pyScales)]
+	return pyScales, matScales			
+		
