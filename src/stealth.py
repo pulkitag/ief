@@ -24,6 +24,7 @@ def get_scale_net():
 	net.set_preprocess(meanDat=(115.2254, 123.9648, 124.2966)) 
 	return net
 
+
 def get_ief_net():
 	modelDir = '/work4/pulkitag-code/code/ief/IEF/models/'
 	netName  = osp.join(modelDir, 'ief-googlenet-dec2015.caffemodel')
@@ -32,14 +33,15 @@ def get_ief_net():
 	net      = mp.MyNet(defFile, netName, deviceId=1)
 	#Set preprocessing in the net
 	#As of now the ief net takes RGB images, but the scale net takes BGR
-	net.set_preprocess(chSwap=None, meanDat=(122.6768, 116.6703, 104.0108), ipName='image')
+	net.set_preprocess(chSwap=None, meanDat=(117.3785, 117.6438, 110.1771), ipName='image')
 	net.set_preprocess(ipName='kp_pos', noTransform=True)
 	net.set_preprocess(ipName='label',  noTransform=True)
 	#Get the metadata
 	metaData = pickle.load(open(metaFile, 'r')) 
 	return net, metaData
 
-def predict_pose(setName='val'):
+	
+def predict_pose(setName='val', cropSz=256, poseImSz=224):
 	#Read the scales
 	scaleFile = 'tmp-ief-scale-%s.pkl' % setName
 	data      = pickle.load(open(scaleFile,'r'))
@@ -58,18 +60,24 @@ def predict_pose(setName='val'):
 		ims = []
 		grs = []
 		for  n in range(N):
-			cropIm = kpt.crop_at_scale(scale=sc[n], cropSz=224)
-			imData = np.zeros((1,224,224,3)).astype(np.float32)
-			imData[0,:,:,:] = cropIm[n]
+			cropIm = kpt.crop_at_scale(scale=sc[n], cropSz=cropSz)
+			#Get the center patch
+			xSt, ySt = (cropSz - poseImSz)/2, (cropSz - poseImSz)/2
+			xEn, yEn = xSt + poseImSz, ySt + poseImSz 
+			imData = np.zeros((1,poseImSz,poseImSz,3)).astype(np.float32)
+			imData[0,:,:,:] = cropIm[n][ySt:yEn, xSt:xEn, :]
 			currPose        = np.zeros((1,17,2,1)).astype(np.float32)
 			for i in range(17):
-				currPose[0,i,0] = copy.deepcopy(seedPose[0,i])
-				currPose[0,i,1] = copy.deepcopy(seedPose[1,i])
+				currPose[0,i,0] = copy.deepcopy(seedPose[0,i] - xSt)
+				currPose[0,i,1] = copy.deepcopy(seedPose[1,i] - ySt)
+			#The marking point is the center of the image
+			currPose[0, 16, 0] = poseImSz / 2
+			currPose[0, 16, 1] = poseImSz / 2
 			labels = np.zeros((1,16,2,1)).astype(np.float32)
 			poseSteps, grSteps = [], []
 			poseSteps.append(copy.deepcopy(currPose))
 			for step in range(4):
-				opDat    = net.forward(blobs=['cls3_fc', 'rendering'], image=imData,
+				opDat    = net.forward(blobs=['cls3_fc', 'rendering', 'input'], image=imData,
 									 kp_pos=copy.deepcopy(currPose), label=labels)
 				kPred    = copy.deepcopy(opDat['cls3_fc'].squeeze())
 				gRender  = copy.deepcopy(opDat['rendering'].squeeze())
@@ -80,7 +88,7 @@ def predict_pose(setName='val'):
 					currPose[0,i,1] = currPose[0,i,1] + mxStepSz * dy
 				poseSteps.append(copy.deepcopy(currPose))
 			ops.append(poseSteps)
-			ims.append(cropIm[n])
+			ims.append(imData[0])
 			grs.append(grSteps)
 		allPoses.append(ops)
 		allIms.append(ims)
@@ -96,7 +104,7 @@ def save_predictions(setName='val'):
 
 def plot_predictions(setName='val'):
 	plt.close('all')
-	figRen = plt.figure()
+	#figRen = plt.figure()
 	figVis = plt.figure()
 	plt.ion()
 	#Form the axes for keypoint visualization
@@ -107,9 +115,9 @@ def plot_predictions(setName='val'):
 			ax.append(figVis.add_subplot(2, 2, count))
 			count += 1
 	#Form the axes for gaussian visualization
-	axRen = []
-	for i in range(16):
-		axRen.append(figRen.add_subplot(4,4,i+1))
+	#axRen = []
+	#for i in range(16):
+	#	axRen.append(figRen.add_subplot(4,4,i+1))
 
 	fName = 'tmp-ief-pose-%s.pkl' % setName
 	dat   = pickle.load(open(fName, 'r'))
@@ -123,12 +131,12 @@ def plot_predictions(setName='val'):
 			plt.figure(figVis.number) 							
 			for i in range(4):
 				print im.shape, pSeq[i].shape
-				vis.plot_pose_stickmodel(im, pSeq[i].squeeze().transpose((1,0)), ax[i])
+				vis.plot_pose_stickmodel(im, pSeq[i+1].squeeze().transpose((1,0)), ax[i])
 				plt.draw()
 				plt.show()
 			#Plot the gaussian renderings
-			plt.figure(figRen.number) 							
-			vis.plot_gauss_maps(gr[0], ax=axRen)
+			#plt.figure(figRen.number) 							
+			#vis.plot_gauss_maps(gr[0], ax=axRen)
 			ip = raw_input()
 			if ip == 'q':
 				return

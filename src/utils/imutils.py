@@ -7,6 +7,7 @@ import copy
 import time
 
 
+
 def crop(im, bbox):
 	'''
 		Crop the image without any warping
@@ -167,8 +168,10 @@ def centered_crop(crpSz, im, pt, scale):
 	pdX1, pdX2, pdY1, pdY2 = pd
 	x1, x2 = x1+pdX1, x2+pdX1
 	y1, y2 = y1+pdY1, y2+pdY1
+	print(x1, x2, y1, y2)
 	pdImg  = pdImg[y1:y2,x1:x2,:]
-	pdImg = scm.imresize(pdImg, (crpSz, crpSz))
+	#pdImg = scm.imresize(pdImg, (crpSz, crpSz), interp='bicubic')
+	pdImg = cv2.resize(pdImg, (crpSz, crpSz), interpolation=cv2.INTER_LINEAR)
 	return pdImg	
 
 ##
@@ -182,6 +185,7 @@ def pad_to_fit(im, imRange):
 	pdY1   = abs(min(0, y1))
 	pdX2   = abs(max(0, x2 - w))
 	pdY2   = abs(max(0, y2 - h))
+	print (x1, y1, x2, y2, pdX1, pdY1, pdX2, pdY2)
 	pdImg = copy.deepcopy(im)
 	if pdImg.ndim==2:
 		pdImg = np.pad(pdImg, ((pdY1, pdY2), (pdX1, pdX2)),

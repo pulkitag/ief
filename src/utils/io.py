@@ -44,5 +44,5 @@ class DataSet(object):
 	#Return the datafiles belonging to a set
 	def get_set_files(self, setName):
 		names     = self.get_set_ids(setName)
-		dataFiles = [self.dataFile_ % n for n in names]
+		dataFiles = [self.dataFile_ % ('%06d' % int(n)) for n in names]
 		return dataFiles 
