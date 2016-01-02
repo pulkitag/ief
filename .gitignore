@@ -3,3 +3,4 @@
 *.swc
 docs/*
 models/*
+*.tar

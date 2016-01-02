@@ -7,9 +7,7 @@
 # Written by Joao Carreira, Pulkit Agrawal and Katerina Fragkiadki
 # --------------------------------------------------------
 
-import pprint
 import numpy as np
-import sys
 from utils import imutils as imu
 from utils import imdata as imd
 from utils import io
