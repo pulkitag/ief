@@ -44,7 +44,7 @@ def get_pose_net():
 ##
 # Predicting Poses
 class PoseIEF(object):
-	def __init__(netScale=None, netPose=None, metaPose=None,
+	def __init__(self, netScale=None, netPose=None, metaPose=None,
 							 cropSz=256, poseImSz=224):
 		if netScale is  None:
 			netScale = get_scale_net()
@@ -61,7 +61,7 @@ class PoseIEF(object):
 
 	##
 	#Predict pose
-	def predict(imName='./test_images/mpii-test-079555750.jpg', 
+	def predict(self, imName='./test_images/mpii-test-079555750.jpg', 
 							bodyPt=(249,249), returnIm=False):
 		'''
 			imName  : image file name for which the pose needs to be predicted
@@ -74,14 +74,23 @@ class PoseIEF(object):
 		im     = scm.imread(imName)
 		
 		#Crop the image at different scales
-		imData = np.zeros((len(LIST_SCALES), cropSz, cropSz, 3))
+		imData  = np.zeros((len(LIST_SCALES), cropSz, cropSz, 3))
+		scData  = np.zeros((len(LIST_SCALES), 2))
+		posData = np.zeros((len(LIST_SCALES), 2))
 		for i,s in enumerate(LIST_SCALES):
-			imData[i] = imu.centered_crop(cropSz, copy.deepcopy(im), bodyPt, s)
-		
+			imData[i], scs, crpPos = imu.centered_crop(cropSz, copy.deepcopy(im), bodyPt, s, 
+												returnScale=True)
+			scData[i]  = np.array(scs).reshape(1,2)	
+			posData[i] = np.array(crpPos).reshape(1,2)
+	
 		#Use the scale net to find the best scale
 		scaleOp  = self.netScale_.forward(blobs=['fc-op'], data=imData)
-		scaleIdx = scaleDat['fc-op'].squeeze().argmax()
+		scaleIdx = scaleOp['fc-op'].squeeze().argmax()
 		scale    = LIST_SCALES[scaleIdx]
+		#Scale to use to return the image in the original space
+		oScale   = scData[scaleIdx]
+		#Original location of the cropped image
+		oPos     = posData[scaleIdx]
 
 		#Prepare image for pose prediction	
 		imScale  = imData[scaleIdx]
@@ -92,8 +101,8 @@ class PoseIEF(object):
 		#Seed pose
 		currPose        = np.zeros((1,17,2,1)).astype(np.float32)
 		for i in range(16):
-			currPose[0,i,0] = copy.deepcopy(seedPose[0,i] - xSt)
-			currPose[0,i,1] = copy.deepcopy(seedPose[1,i] - ySt)
+			currPose[0,i,0] = copy.deepcopy(self.seedPose_[0,i] - xSt)
+			currPose[0,i,1] = copy.deepcopy(self.seedPose_[1,i] - ySt)
 		#The marking point is the center of the image
 		currPose[0, 16, 0] = poseImSz / 2
 		currPose[0, 16, 1] = poseImSz / 2
@@ -105,19 +114,53 @@ class PoseIEF(object):
 		for step in range(4):
 			poseOp = self.netPose_.forward(blobs=['cls3_fc'], image=imScale,
 							 kp_pos=copy.deepcopy(currPose), label=labels)
-			kPred    = copy.deepcopy(opDat['cls3_fc'].squeeze())
-			pdb.set_trace()
+			kPred    = copy.deepcopy(poseOp['cls3_fc'].squeeze())
 			for i in range(16):
 				dx, dy = kPred[i], kPred[16 + i]
-				currPose[0,i,0] = currPose[0,i,0] + mxStepSz * dx
-				currPose[0,i,1] = currPose[0,i,1] + mxStepSz * dy
+				currPose[0,i,0] = currPose[0,i,0] + self.mxStepSz_ * dx
+				currPose[0,i,1] = currPose[0,i,1] + self.mxStepSz_ * dy
+		
+		#Convert the pose in the original image coordinated
+		origPose = (currPose.squeeze() +  np.array([xSt, ySt]).reshape(1,2)) * oScale + oPos
+
 		if returnIm:
-			return copy.deepcopy(currPose), imScale
+			#return origPose, copy.deepcopy(currPose), imScale[0]
+			return origPose, im
 		else:
-			return copy.deepcopy(currPose)
+			return origPose, copy.deepcopy(currPose)
 
 
 ##
 #Predict poses for all validation set examples in mpii
-def pred_mpii_val():
-	pass	
+def pred_mpii_val(isPlot=False):
+	if isPlot:
+		plt.ion()
+		ax = plt.subplot(111)		
+
+	#Get IEF object
+	ief = PoseIEF()
+
+	#Get MPII val file names
+	ioDat     = io.DataSet(cfg)
+	valNames  = ioDat.get_set_files('val')
+
+	poses = np.zeros((len(valNames), 17, 2))
+	#ims   = np.zeros((len(valNames), 224, 224, 3)).astype(np.uint8)
+	for i, name in enumerate(valNames):
+		print (i)
+		data    = imd.ImKPtDataMpii.from_file(name)
+		bodyPt  = data.bodyPos_.squeeze()
+		imFile  = data.imFile_
+		pose, im = ief.predict(imFile, bodyPt, returnIm=True)
+		poses[i] = pose.squeeze()
+		#ims[i]   = im.astype(np.uint8)
+		if isPlot:
+			ax.clear()
+			vis.plot_pose_stickmodel(im.astype(np.uint8), pose.squeeze().transpose((1,0)), ax)
+			plt.draw()
+			plt.show()
+			ip = raw_input()
+			if ip=='q':
+				return
+	sio.savemat('val_pred.mat', {'poses': poses})
+			

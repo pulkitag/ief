@@ -36,6 +36,7 @@ class ImKPtData(ImData):
 							K - number of keypoints per person
 							2 - x,y coordinate of the keypoint
 		'''
+		self.imFile_ = imFile
 		self.im_     = scm.imread(imFile)
 		self.kpts_   = copy.deepcopy(kpts)
 		assert kpts.ndim==3, 'kpts should be 3-D array'

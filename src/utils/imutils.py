@@ -137,7 +137,7 @@ def crop_with_warp(cfg, im, bbox):
 
 ##
 # Crop the image 
-def centered_crop(crpSz, im, pt, scale):
+def centered_crop(crpSz, im, pt, scale, returnScale=False):
 	'''
 		Crop the image im with center at pt at scale "scale"
 		Input Arguments:
@@ -161,16 +161,21 @@ def centered_crop(crpSz, im, pt, scale):
 	x2 = np.ceil(x + side/2.0)
 	y1 = np.floor(y - side/2.0)
 	y2 = np.ceil(y + side/2.0)
-
+	xSt, ySt = x1, y1
+		
 	pdImg, pd = pad_to_fit(im, (x1,x2,y1,y2))
 	pdX1, pdX2, pdY1, pdY2 = pd
 	x1, x2 = x1+pdX1, x2+pdX1
 	y1, y2 = y1+pdY1, y2+pdY1
-	print(x1, x2, y1, y2)
+	#print(x1, x2, y1, y2)
 	pdImg  = pdImg[y1:y2,x1:x2,:]
 	#pdImg = scm.imresize(pdImg, (crpSz, crpSz), interp='bicubic')
 	pdImg = cv2.resize(pdImg, (crpSz, crpSz), interpolation=cv2.INTER_LINEAR)
-	return pdImg	
+	xScale, yScale = float(x2-x1)/crpSz, float(y2-y1)/crpSz
+	if returnScale:
+		return pdImg, (xScale, yScale), (xSt, ySt)	
+	else:
+		return pdImg	
 
 ##
 #Figure out if the image needs to be padded
@@ -183,7 +188,7 @@ def pad_to_fit(im, imRange):
 	pdY1   = abs(min(0, y1))
 	pdX2   = abs(max(0, x2 - w))
 	pdY2   = abs(max(0, y2 - h))
-	print (x1, y1, x2, y2, pdX1, pdY1, pdX2, pdY2)
+	#print (x1, y1, x2, y2, pdX1, pdY1, pdX2, pdY2)
 	pdImg = copy.deepcopy(im)
 	if pdImg.ndim==2:
 		pdImg = np.pad(pdImg, ((pdY1, pdY2), (pdX1, pdX2)),

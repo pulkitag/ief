@@ -1,5 +1,6 @@
 *.pkl
 *.pyc
 *.swp
+*.mat
 tmp*
 tmp/*
