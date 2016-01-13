@@ -1,3 +1,10 @@
+# --------------------------------------------------------
+# IEF
+# Copyright (c) 2015
+# Licensed under BSD License [see LICENSE for details]
+# Written by Joao Carreira, Pulkit Agrawal and Katerina Fragkiadki
+# --------------------------------------------------------
+
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt

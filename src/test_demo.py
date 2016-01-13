@@ -1,3 +1,11 @@
+# --------------------------------------------------------
+# IEF
+# Copyright (c) 2015
+# Licensed under BSD License [see LICENSE for details]
+# Written by Joao Carreira, Pulkit Agrawal and Katerina Fragkiadki
+# --------------------------------------------------------
+
+
 import my_pycaffe as mp
 from utils import imdata as imd
 from utils import io
@@ -144,15 +152,18 @@ def pred_mpii_val(isPlot=False):
 	ioDat     = io.DataSet(cfg)
 	valNames  = ioDat.get_set_files('val')
 
-	poses = np.zeros((len(valNames), 17, 2))
+	poses     = np.zeros((len(valNames), 17, 2))
+	cropPoses = np.zeros((len(valNames), 17, 2))
 	#ims   = np.zeros((len(valNames), 224, 224, 3)).astype(np.uint8)
 	for i, name in enumerate(valNames):
 		print (i)
 		data    = imd.ImKPtDataMpii.from_file(name)
 		bodyPt  = data.bodyPos_.squeeze()
 		imFile  = data.imFile_
-		pose, im = ief.predict(imFile, bodyPt, returnIm=True)
-		poses[i] = pose.squeeze()
+		#pose, im = ief.predict(imFile, bodyPt, returnIm=True)
+		pose, cropPose = ief.predict(imFile, bodyPt, returnIm=False)
+		poses[i]     = pose.squeeze()
+		cropPoses[i] = cropPose.squeeze()
 		#ims[i]   = im.astype(np.uint8)
 		if isPlot:
 			ax.clear()
@@ -162,5 +173,5 @@ def pred_mpii_val(isPlot=False):
 			ip = raw_input()
 			if ip=='q':
 				return
-	sio.savemat('val_pred.mat', {'poses': poses})
+	sio.savemat('val_pred.mat', {'poses': poses, 'cropPoses': cropPoses})
 			
