@@ -5,10 +5,10 @@ This package is an implementation of the algorithm described in our paper ([pdf]
 
 
 
-[comment]: <> (Automatically Generated Documentation)
+[comment]: # (Automatically Generated Documentation)
 
-[comment]: <> (-------------)
+[comment]: # (-------------)
 
-[comment]: <> (doxygen: sudo apt-get install doxygen)
+[comment]: # (doxygen: sudo apt-get install doxygen)
 
-[comment]: <> (doxypy:  sudo pip install doxypy)
+[comment]: # (doxypy:  sudo pip install doxypy)
