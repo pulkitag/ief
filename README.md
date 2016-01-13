@@ -1,5 +1,12 @@
-Requirements
+Human Pose Estimation with Iterative Error Feedback (IEF)
+====================================================
 
-doxygen sudo apt-get install doxygen
+This package is an implementation of the algorithm described in our paper ([pdf](http://arxiv.org/abs/1507.06550)) for estimating human pose in natural images. The README will be shortly updated.
 
-doxypy  sudo pip install doxypy
+
+Automatically Generated Documentation
+-------------
+
+doxygen: sudo apt-get install doxygen
+
+doxypy:  sudo pip install doxypy
