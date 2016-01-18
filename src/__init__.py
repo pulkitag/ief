@@ -5,5 +5,3 @@
 # Written by Joao Carreira, Pulkit Agrawal and Katerina Fragkiadki
 # --------------------------------------------------------
 from . import config
-from . import train
-from . import test

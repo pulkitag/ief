@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import copy
 import h5py as h5
 import scipy.misc as scm
-from utils import visualization as vis
-from utils import imutils as imu
+from . import visualization as vis
+from . import imutils as imu
 import numpy as np
 
 ##
