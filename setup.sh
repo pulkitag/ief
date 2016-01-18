@@ -6,7 +6,7 @@
 # --------------------------------------------------------
 
 #!/bin/bash
-SRC_URL='http://www.cs.berkeley.edu:~/pulkitag/ief/'
+SRC_URL='http://www.cs.berkeley.edu:/~pulkitag/ief/'
 #Download the models
 wget -l 0 ${SRC_URL}/models.tar ./
 tar -xf models.tar
