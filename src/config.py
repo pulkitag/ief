@@ -39,7 +39,7 @@ __C.PATHS.DATA_FILE = osp.join(__C.PATHS.BASE_DIR, 'Annotations',
 															 '%s.mat')
 
 #For storing model
-__C.PATHS.MODEL_DIR   = '../models/'
+__C.PATHS.MODEL_DIR   = 'models/'
 __C.SCALE_MODEL = edict() 							
 #The path of the model for determining the scale								 
 __C.SCALE_MODEL.NET   = osp.join(__C.PATHS.MODEL_DIR,
