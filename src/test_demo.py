@@ -30,9 +30,13 @@ LIST_SCALES = cfg.SCALE_LAMBDA
 def get_scale_net(gpu = 0):
 	netName  = cfg.SCALE_MODEL.NET
 	defFile  = cfg.SCALE_MODEL.PROTO
-	net      = mp.MyNet(defFile, netName, deviceId = gpu)
-        if (isinstance(gpu, bool) and False == gpu):
-		net.set_mode(False);
+	if(isinstance(gpu, bool) and False == gpu):
+		deviceId = None
+		isGPU    = False
+	else:
+		deviceId = gpu
+		isGPU    = True
+	net      = mp.MyNet(defFile, netName, isGPU = isGPU,  deviceId = deviceId)
 	#Set preprocessing in the net
 	net.set_preprocess(meanDat=(115.2254, 123.9648, 124.2966)) 
 	return net
@@ -43,9 +47,13 @@ def get_pose_net(gpu = 0):
 	netName  = cfg.POSE_MODEL.NET
 	defFile  = cfg.POSE_MODEL.PROTO
 	metaFile = cfg.POSE_MODEL.META
-	net      = mp.MyNet(defFile, netName, deviceId = gpu)
-        if (isinstance(gpu, bool) and False == gpu):
-        	net.set_mode(False);
+	if(isinstance(gpu, bool) and False == gpu):
+		deviceId = None
+		isGPU    = False
+	else:
+		deviceId = gpu
+		isGPU    = True
+	net      = mp.MyNet(defFile, netName, isGPU = isGPU, deviceId = deviceId)
 	#Set preprocessing in the net
 	#As of now the ief net takes RGB images, but the scale net takes BGR
 	net.set_preprocess(chSwap=None, meanDat=(117.3785, 117.6438, 110.1771), ipName='image')
@@ -58,13 +66,11 @@ def get_pose_net(gpu = 0):
 ##
 # Predicting Poses
 class PoseIEF(object):
-	gpu = 0
-	def __init__(self, netScale=None, netPose=None, metaPose=None,
-							 cropSz=256, poseImSz=224):
+	def __init__(self, netScale=None, netPose=None, metaPose=None, cropSz=256, poseImSz=224, gpu=0):
 		if netScale is  None:
-			netScale = get_scale_net(self.gpu)
+			netScale = get_scale_net(gpu)
 		if netPose is None:
-			netPose, metaPose = get_pose_net(self.gpu)
+			netPose, metaPose = get_pose_net(gpu)
 		#The two nets
 		self.netScale_ = netScale
 		self.netPose_  = netPose
