@@ -27,21 +27,25 @@ LIST_SCALES = cfg.SCALE_LAMBDA
 
 ##
 #Scale Network
-def get_scale_net():
+def get_scale_net(gpu = 0):
 	netName  = cfg.SCALE_MODEL.NET
 	defFile  = cfg.SCALE_MODEL.PROTO
-	net      = mp.MyNet(defFile, netName, deviceId=1)
+	net      = mp.MyNet(defFile, netName, deviceId = gpu)
+        if (isinstance(gpu, bool) and False == gpu):
+		net.set_mode(False);
 	#Set preprocessing in the net
 	net.set_preprocess(meanDat=(115.2254, 123.9648, 124.2966)) 
 	return net
 
 ##
 #Pose Network
-def get_pose_net():
+def get_pose_net(gpu = 0):
 	netName  = cfg.POSE_MODEL.NET
 	defFile  = cfg.POSE_MODEL.PROTO
 	metaFile = cfg.POSE_MODEL.META
-	net      = mp.MyNet(defFile, netName, deviceId=1)
+	net      = mp.MyNet(defFile, netName, deviceId = gpu)
+        if (isinstance(gpu, bool) and False == gpu):
+        	net.set_mode(False);
 	#Set preprocessing in the net
 	#As of now the ief net takes RGB images, but the scale net takes BGR
 	net.set_preprocess(chSwap=None, meanDat=(117.3785, 117.6438, 110.1771), ipName='image')
@@ -54,12 +58,13 @@ def get_pose_net():
 ##
 # Predicting Poses
 class PoseIEF(object):
+	gpu = 0
 	def __init__(self, netScale=None, netPose=None, metaPose=None,
 							 cropSz=256, poseImSz=224):
 		if netScale is  None:
-			netScale = get_scale_net()
+			netScale = get_scale_net(self.gpu)
 		if netPose is None:
-			netPose, metaPose = get_pose_net()
+			netPose, metaPose = get_pose_net(self.gpu)
 		#The two nets
 		self.netScale_ = netScale
 		self.netPose_  = netPose
@@ -71,7 +76,7 @@ class PoseIEF(object):
 
 	##
 	#Predict pose
-	def predict(self, imName='./test_images/mpii-test-079555750.jpg', 
+	def predict(self, img='./test_images/mpii-test-079555750.jpg', 
 							bodyPt=(249,249), returnIm=False):
 		'''
 			imName  : image file name for which the pose needs to be predicted
@@ -81,7 +86,10 @@ class PoseIEF(object):
 		'''
 		cropSz, poseImSz = self.cropSz_, self.poseImSz_
 		#Read the image
-		im     = scm.imread(imName)
+                if(isinstance(img, str)):
+                        im = scm.imread(img)
+                else:
+                        im = img
 		
 		#Crop the image at different scales
 		imData  = np.zeros((len(LIST_SCALES), cropSz, cropSz, 3))
