@@ -40,6 +40,10 @@ td.vis.plot_pose_stickmodel(im, pose.squeeze().transpose((1,0)))
 
 Note: This code only runs 1 image in a single batch and is hence runs slower than what can be achieved with larger batch sizes.
 
+### Downloading MPII Annotations in python
+See the wiki [page.](https://github.com/pulkitag/ief/wiki/Data) 
+
+### Coming Soon
 The README will be shortly updated with more details.
 
 
