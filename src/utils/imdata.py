@@ -10,12 +10,14 @@
 
 import matplotlib.pyplot as plt
 import copy
-import h5py as h5
 import scipy.misc as scm
 from . import visualization as vis
 from . import imutils as imu
 import numpy as np
-
+try:
+	import h5py as h5
+except:
+	print('WARNING: h5py not found, some functions may not work')
 ##
 # Parent class for data objects
 class ImData(object):

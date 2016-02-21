@@ -58,6 +58,7 @@ def plot_pose_stickmodel(im, kpts, ax=None, pad=5, lw=3):
 	#upper neck - head
 	ax.plot(kpts[0, [8, 9]], kpts[1, [8, 9]], 'y-', linewidth=lw)		
 	plt.draw()
+	plt.show()
 
 def plot_gauss_maps(imgs, ax=None, offset=50.0):
 	'''

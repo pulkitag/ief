@@ -4,3 +4,4 @@
 *.mat
 tmp*
 tmp/*
+pycaffe_utils/*

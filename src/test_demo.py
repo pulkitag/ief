@@ -5,8 +5,10 @@
 # Written by Joao Carreira, Pulkit Agrawal and Katerina Fragkiadki
 # --------------------------------------------------------
 
-
-import my_pycaffe as mp
+try:
+	import my_pycaffe as mp
+except:
+	from pycaffe_utils import my_pycaffe as mp
 from utils import imdata as imd
 from utils import io
 from utils import visualization as vis
