@@ -1,0 +1,3 @@
+The annotations were created using
+debugging.save_mpii_data_pythonic 
+train_data doesnot has annotations for 233 people as they didnot have the scale/keypoint annotations missing. 
