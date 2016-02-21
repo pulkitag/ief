@@ -1,5 +1,6 @@
 *.pyc
 *.swp
 *.swc
+*.tar
 docs/*
 models/*

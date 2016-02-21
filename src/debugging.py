@@ -28,4 +28,11 @@ def vis_mpii(num=0):
 	kpt.plot() 
 
 
+def save_mpii_data_pythonic(setName='train'):
+	ioDat  = io.DataSet(cfg)
+	fNames = ioDat.get_set_files(setName)
+	data   = imd.ImKPtDataMpii.from_file(fNames[0])
+	return data
+	print data.imFile_
+	print fNames[0] 
 
