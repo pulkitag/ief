@@ -1,5 +1,7 @@
 *.pkl
 *.pyc
 *.swp
+*.mat
 tmp*
 tmp/*
+pycaffe_utils/*

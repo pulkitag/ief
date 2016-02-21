@@ -1,3 +1,11 @@
+% --------------------------------------------------------
+% IEF
+% Copyright (c) 2015
+% Licensed under BSD License [see LICENSE for details]
+% Written by Joao Carreira, Pulkit Agrawal and Katerina Fragkiadki
+% --------------------------------------------------------
+
+
 %Master file simply lists all the files along with the imageids
 paths  = get_paths();
 annDat = load(paths.annFile);

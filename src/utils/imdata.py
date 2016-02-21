@@ -1,15 +1,23 @@
 ## @package imdata
 # Defines Classes for storing the data
 #
+# --------------------------------------------------------
+# IEF
+# Copyright (c) 2015
+# Licensed under BSD License [see LICENSE for details]
+# Written by Joao Carreira, Pulkit Agrawal and Katerina Fragkiadki
+# --------------------------------------------------------
 
 import matplotlib.pyplot as plt
 import copy
-import h5py as h5
 import scipy.misc as scm
-from utils import visualization as vis
-from utils import imutils as imu
+from . import visualization as vis
+from . import imutils as imu
 import numpy as np
-
+try:
+	import h5py as h5
+except:
+	print('WARNING: h5py not found, some functions may not work')
 ##
 # Parent class for data objects
 class ImData(object):
@@ -36,6 +44,7 @@ class ImKPtData(ImData):
 							K - number of keypoints per person
 							2 - x,y coordinate of the keypoint
 		'''
+		self.imFile_ = imFile
 		self.im_     = scm.imread(imFile)
 		self.kpts_   = copy.deepcopy(kpts)
 		assert kpts.ndim==3, 'kpts should be 3-D array'
