@@ -7,7 +7,11 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2
+try:
+ import cv2
+except:
+ print('opencv not available - function plot_pose_stickmodel_cv2mat() will not work')
+
 
 def plot_pose_stickmodel_cv2mat(im, kpts, lw=3):
         '''
