@@ -1,3 +1,5 @@
 *.pkl
 *.mat
 *.tar
+dets/*
+images*
