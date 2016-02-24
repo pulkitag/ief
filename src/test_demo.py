@@ -70,7 +70,7 @@ class PoseIEF(object):
 
 	##
 	#Predict pose
-	def predict(self, img='./test_images/mpii-test-079555750.jpg', 
+	def predict(self, imName='./test_images/mpii-test-079555750.jpg', 
 							bodyPt=(249,249), returnIm=False):
 		'''
 			imName  : image file name for which the pose needs to be predicted
@@ -80,10 +80,10 @@ class PoseIEF(object):
 		'''
 		cropSz, poseImSz = self.cropSz_, self.poseImSz_
 		#Read the image
-                if(isinstance(img, str)):
-                        im = scm.imread(img)
+                if(isinstance(imName, str)):
+                        im = scm.imread(imName)
                 else:
-                        im = img
+                        im = imName
 		
 		#Crop the image at different scales
 		imData  = np.zeros((len(LIST_SCALES), cropSz, cropSz, 3))
