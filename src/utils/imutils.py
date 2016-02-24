@@ -191,10 +191,10 @@ def pad_to_fit(im, imRange):
 	x1, x2, y1, y2 = imRange
 	#Determine the padding
 	h, w, _ = im.shape
-	pdX1   = abs(min(0, x1))
-	pdY1   = abs(min(0, y1))
-	pdX2   = abs(max(0, x2 - w))
-	pdY2   = abs(max(0, y2 - h))
+	pdX1   = int(abs(min(0, x1)))
+	pdY1   = int(abs(min(0, y1)))
+	pdX2   = int(abs(max(0, x2 - w)))
+	pdY2   = int(abs(max(0, y2 - h)))
 	#print (x1, y1, x2, y2, pdX1, pdY1, pdX2, pdY2)
 	pdImg = copy.deepcopy(im)
 	if pdImg.ndim==2:

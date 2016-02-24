@@ -25,7 +25,7 @@ This package has been tested on Ubuntu 14.04.
 Running Demo
 ------------
 In the main code directory launch ipython and run,
-<pre><code>
+```python
 from src import test_demo as td
 #Define pose-predictor class
 ief    = td.PoseIEF()
@@ -39,10 +39,14 @@ pose,_ =  ief.predict(imName, bodyPt)
 import scipy.misc as scm
 im = scm.imread(imName)
 td.vis.plot_pose_stickmodel(im, pose.squeeze().transpose((1,0)))
-</code></pre>
+```
 
 Note: This code only runs 1 image in a single batch and is hence runs slower than what can be achieved with larger batch sizes.
 
+### Downloading MPII Annotations in python
+See the wiki [page.](https://github.com/pulkitag/ief/wiki/Data) 
+
+### Coming Soon
 The README will be shortly updated with more details.
 >>>>>>> 77e336189ef32217e62145354ff3d2ca1316d519
 

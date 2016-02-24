@@ -7,6 +7,52 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+try:
+ import cv2
+except:
+ print('opencv not available - function plot_pose_stickmodel_cv2mat() will not work')
+
+
+def plot_pose_stickmodel_cv2mat(im, kpts, lw=3):
+        '''
+                im  : image
+                kpts: key points 2 x N, where N is the number of keypoints
+                                        (x,y) format
+                lw  : line width
+        '''
+
+        im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
+	
+	#Plot the keypoints - this works for MPII style keypoints
+        #Right leg
+	cv2.line(im, (kpts[0, [0]], kpts[1, [0]]), (kpts[0, [1]], kpts[1, [1]]), (0, 0, 255), lw)
+        cv2.line(im, (kpts[0, [1]], kpts[1, [1]]), (kpts[0, [2]], kpts[1, [2]]), (0, 0, 255), lw)
+	#Right arm
+        cv2.line(im, (kpts[0, [10]], kpts[1, [10]]), (kpts[0, [11]], kpts[1, [11]]), (0, 0, 255), lw)
+        cv2.line(im, (kpts[0, [11]], kpts[1, [11]]), (kpts[0, [12]], kpts[1, [12]]), (0, 0, 255), lw)
+	#thorax-right arm
+        cv2.line(im, (kpts[0, [7]], kpts[1, [7]]), (kpts[0, [12]], kpts[1, [12]]), (0, 0, 255), lw)
+	#right hip-pelvis
+        cv2.line(im, (kpts[0, [2]], kpts[1, [2]]), (kpts[0, [6]], kpts[1, [6]]), (0, 0, 255), lw)
+	#left arm		
+        cv2.line(im, (kpts[0, [13]], kpts[1, [13]]), (kpts[0, [14]], kpts[1, [14]]), (0, 255, 0), lw)
+        cv2.line(im, (kpts[0, [14]], kpts[1, [14]]), (kpts[0, [15]], kpts[1, [15]]), (0, 255, 0), lw)
+	#thorax - leftarm 
+        cv2.line(im, (kpts[0, [7]], kpts[1, [7]]), (kpts[0, [13]], kpts[1, [13]]), (0, 255, 0), lw)
+	#left leg
+        cv2.line(im, (kpts[0, [3]], kpts[1, [3]]), (kpts[0, [4]], kpts[1, [4]]), (0, 255, 0), lw)
+        cv2.line(im, (kpts[0, [4]], kpts[1, [4]]), (kpts[0, [5]], kpts[1, [5]]), (0, 255, 0), lw)
+	#left hip - pelvis
+        cv2.line(im, (kpts[0, [3]], kpts[1, [3]]), (kpts[0, [6]], kpts[1, [6]]), (0, 255, 0), lw)
+	#pelvis - thorax
+        cv2.line(im, (kpts[0, [6]], kpts[1, [6]]), (kpts[0, [7]], kpts[1, [7]]), (0, 255, 255), lw)
+	#thorax - upper neck
+        cv2.line(im, (kpts[0, [7]], kpts[1, [7]]), (kpts[0, [8]], kpts[1, [8]]), (0, 255, 255), lw)
+	#upper neck - head
+        cv2.line(im, (kpts[0, [8]], kpts[1, [8]]), (kpts[0, [9]], kpts[1, [9]]), (0, 255, 255), lw)
+
+        return im
+
 
 def plot_pose_stickmodel(im, kpts, ax=None, pad=5, lw=3, isShow=True):
 	'''
