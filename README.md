@@ -1,9 +1,6 @@
   Human Pose Estimation with Iterative Error Feedback (IEF)
   ====================================================
 
-<<<<<<< HEAD
-  This repository provides a Caffe implementation of the algorithm described in our paper ([pdf](http://arxiv.org/abs/1507.06550)) for estimating human pose in natural images.
-=======
 This package is an implementation of the algorithm described in our paper ([pdf](http://arxiv.org/abs/1507.06550)) for estimating human pose in natural images.
 
 Requirements
@@ -48,13 +45,6 @@ See the wiki [page.](https://github.com/pulkitag/ief/wiki/Data)
 
 ### Coming Soon
 The README will be shortly updated with more details.
->>>>>>> 77e336189ef32217e62145354ff3d2ca1316d519
-
-  To estimate pose of new images. 
-
-  The README will be shortly updated.
-
-
 
   [comment]: # (Automatically Generated Documentation)
 
