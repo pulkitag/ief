@@ -63,7 +63,7 @@ def get_pose_predictor():
 	ief    = td.PoseIEF()
 	return ief
 
-def det_pose(ief=None):
+def det_pose(ief=None, isShow=True):
 	dirName = 'datasets/mpii/data'
 	#Get detection data
 	detFile = osp.join(dirName, 'dets/mpii_person_det.pkl')
@@ -76,14 +76,19 @@ def det_pose(ief=None):
 	valFile  = osp.join(dirName, 'annotations/val_data.pkl')
 	valData  = pickle.load(open(valFile, 'r'))
 	valNames = valData['imName']
+	gtPos    = valData['bodyPos']
 	#Get figure
 	plt.close('all')
 	fig = plt.figure()
 	ax  = fig.add_subplot(111)	
-	for name in valNames:
+	for i, name in enumerate(valNames):
+		print (i)
 		ax.clear()
 		bName    = osp.basename(name).split('.')[0]
+		if len(detData[bName]) == 0:
+			continue
 		bbox     = detData[bName][0]
+		gtPt     = gtPos[i].squeeze()
 		x1, y1, x2, y2, conf = bbox
 		x = int((x1 + x2)/2.0)
 		y = int(y1 + (y2-y1)/3.0)	
@@ -91,8 +96,18 @@ def det_pose(ief=None):
 		imName = osp.join(dirName, name)
 		pose,_ = ief.predict(imName, (x,y))
 		im     = scm.imread(imName)
-		td.vis.plot_pose_stickmodel(im, pose.squeeze().transpose((1,0)), ax=ax)	
-		ip = raw_input()
-		if ip == 'q':
-			return	
+		td.vis.plot_bbox(bbox, ax=ax, isShow=isShow)
+		td.vis.plot_pose_stickmodel(im, pose.squeeze().transpose((1,0)),
+        ax=ax, isShow=isShow)
+		ax.plot(x, y, 'r', markersize=7, marker='o')
+		ax.plot(gtPt[0], gtPt[1], 'black', markersize=7, marker='o')
+		if isShow:
+			plt.draw()
+			plt.show()
+		if not isShow:
+			plt.savefig('src/tmp/%s.jpg' % bName)
+		else:
+			ip = raw_input()
+			if ip == 'q':
+				return	
 

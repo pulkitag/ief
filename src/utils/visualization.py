@@ -8,7 +8,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot_pose_stickmodel(im, kpts, ax=None, pad=5, lw=3):
+def plot_pose_stickmodel(im, kpts, ax=None, pad=5, lw=3, isShow=True):
 	'''
 		im  : image
 		kpts: key points 2 x N, where N is the number of keypoints
@@ -16,7 +16,8 @@ def plot_pose_stickmodel(im, kpts, ax=None, pad=5, lw=3):
 		pad : padding during visualization
 		lw  : line width 
 	'''
-	plt.ion()
+	if isShow:
+		plt.ion()
 	if ax is None:
 		ax = plt.subplot(111)
 	#Increase the size of the underlying image to account for extended keypoints
@@ -56,9 +57,11 @@ def plot_pose_stickmodel(im, kpts, ax=None, pad=5, lw=3):
 	#thorax - upper neck
 	ax.plot(kpts[0, [7, 8]], kpts[1, [7, 8]], 'y-', linewidth=lw)		
 	#upper neck - head
-	ax.plot(kpts[0, [8, 9]], kpts[1, [8, 9]], 'y-', linewidth=lw)		
-	plt.draw()
-	plt.show()
+	ax.plot(kpts[0, [8, 9]], kpts[1, [8, 9]], 'y-', linewidth=lw)
+	plt.tight_layout()
+	if isShow:	
+		plt.draw()
+		plt.show()
 
 def plot_gauss_maps(imgs, ax=None, offset=50.0):
 	'''
@@ -84,4 +87,26 @@ def plot_gauss_maps(imgs, ax=None, offset=50.0):
 		ax[i].imshow(im)
 	plt.draw()
 	plt.show()	
- 
+
+
+def plot_bbox(bbox, ax=None, drawOpts=None, isShow=True):
+	'''
+		bbox: x1, y1, x2, y2, conf
+					or  x1, y1, x2, y2
+	'''
+	if isShow:
+		plt.ion()
+	if ax is None:
+		ax = plt.subplot(111)
+	if drawOpts is None:
+		drawOpts = {'color': 'r', 'linewidth': 3}	
+	#Draw the bounding box
+	x1, y1, x2, y2, conf = np.floor(bbox)
+	ax.plot([x1, x1], [y1, y2], **drawOpts)
+	ax.plot([x1, x2], [y2, y2], **drawOpts)
+	ax.plot([x2, x2], [y2, y1], **drawOpts)
+	ax.plot([x2, x1], [y1, y1], **drawOpts) 
+	plt.tight_layout()
+	if isShow:	
+		plt.draw()
+		plt.show()
