@@ -9,15 +9,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
-def plot_pose_stickmodel_cv2mat(im, kpts, lw=3):
+def plot_pose_stickmodel_cv2mat(im, kpts, lw=3, isRGB=True):
         '''
                 im  : image
                 kpts: key points 2 x N, where N is the number of keypoints
                                         (x,y) format
                 lw  : line width
         '''
-
-        im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
+        if isRGB:
+            im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
 	
 	#Plot the keypoints - this works for MPII style keypoints
         #Right leg
