@@ -36,7 +36,7 @@ def posevideo(input_video_name, output_video_name=None, output_csv_name=None, is
   frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
   if(output_video_name is not None and '' != output_video_name):
    if(False == outv.isOpened()):
-    if(major_ver<3):
+    if int(major_ver) < 3:
      fps = cap.get(cv2.cv.CV_CAP_PROP_FPS)
      outv.open(output_video_name, cv2.cv.CV_FOURCC('A', 'P', '4', '1'), fps, (np.size(frame, 1), np.size(frame, 0)), True) #, frame.shape, True)
     else:
