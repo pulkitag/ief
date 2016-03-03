@@ -6,3 +6,5 @@ docs/*
 models/*
 *.tar
 pycaffe_utils*
+*.mat
+*.pkl
