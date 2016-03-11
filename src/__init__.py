@@ -5,3 +5,5 @@
 # Written by Joao Carreira, Pulkit Agrawal and Katerina Fragkiadki
 # --------------------------------------------------------
 from . import config
+import _init_paths
+

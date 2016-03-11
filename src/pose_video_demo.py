@@ -7,6 +7,7 @@ Copyright (c) 2016, Stefan Helmert
 
 ************************************************************************/
 """
+import _init_paths
 import cv2
 import test_demo as td
 import scipy.misc as scm
@@ -62,9 +63,8 @@ def parse_args():
  parser.add_argument('--isGPU', dest='isGPU', help='Boolean value that specifies if a GPU should be used for detection - isGPU=False means the network runs on CPU', default=True, type=bool)
  parser.add_argument('--deviceId', dest='deviceId', help='Natural value that specifies the number of the GPU which should be used. It starts with 0.', default='0', type=int)
  parser.add_argument('--input_video', dest='input_video_name', help='The name of the video which should be analyzed.', default='video/demo.avi', type=str)
- default_output_name = (parser.parse_args().input_video_name).rsplit('.', 1)[0]
- parser.add_argument('--output_video', dest='output_video_name', help='The name of the video to be newly created containing the stick model.', default=default_output_name+'_PoseIEF.avi', type=str)
- parser.add_argument('--output_csv', dest='output_csv_name', help='The name of the csv file to be newly created containing the joint postions.', default=default_output_name+'_PoseIEF.csv', type=str)
+ parser.add_argument('--output_video', dest='output_video_name', help='The name of the video to be newly created containing the stick model.', default='?', type=str)
+ parser.add_argument('--output_csv', dest='output_csv_name', help='The name of the csv file to be newly created containing the joint postions.', default='?', type=str)
  parser.add_argument('--x_bodyPt', dest='x_bodyPt', help='Natural value that represents the x-coordinate of the pointer telling which human should be analyzed.', default=600, type=int)
  parser.add_argument('--y_bodyPt', dest='y_bodyPt', help='Natural value that represents the y-coordinate of the pointer telling which human should be analyzed.', default=400, type=int)
  if len(sys.argv) == 1:
@@ -72,6 +72,12 @@ def parse_args():
   sys.exit(1)
 
  args = parser.parse_args()
+ default_output_name = args.input_video_name.rsplit('.', 1)[0]
+ if '?' == args.output_video_name:
+  args.output_video_name = default_output_name+'_PoseIEF.avi'
+ if '?' == args.output_csv_name:
+  args.output_csv_name = default_output_name+'_PoseIEF.csv'
+
  return args
 
 if __name__ == '__main__':
