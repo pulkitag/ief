@@ -132,7 +132,7 @@ class PoseIEF(object):
                 return currPose
         ##
         #Predict pose
-	def predict(self, imName='./test_images/mpii-test-079555750.jpg', bodyPt=(249,249), returnIm=False, noIterations=4, fixedScale=False, scaleIdx=None, initialPose=False, currPose=None):
+	def predict(self, imName='./test_images/mpii-test-079555750.jpg', bodyPt=(249,249), returnIm=False, noIterations=4, fixedScale=False, scaleIdx=None, initialPose=False, currPose=None, loopfactor=1.0):
                 '''
 			imName  : image file name for which the pose needs to be predicted
 			bodyPt  : A point on the body of the person (torso) for whom the pose 
@@ -152,19 +152,20 @@ class PoseIEF(object):
                 else:
                         imScale, xSt, ySt, oPos, oScale, scaleIdx = self.proc_netScale(im, cropSz, poseImSz, bodyPt)
                 
-                if False == initialPose:
 	        	#Seed pose
-	        	currPose        = np.zeros((1,17,2,1)).astype(np.float32)
-	        	for i in range(16):
-		        	currPose[0,i,0] = copy.deepcopy(self.seedPose_[0,i] - xSt)
-			        currPose[0,i,1] = copy.deepcopy(self.seedPose_[1,i] - ySt)
-        		#The marking point is the center of the image
-	        	currPose[0, 16, 0] = poseImSz / 2
-	        	currPose[0, 16, 1] = poseImSz / 2
+	       	currPose_        = np.zeros((1,17,2,1)).astype(np.float32)
+	       	for i in range(16):
+	        	currPose_[0,i,0] = copy.deepcopy(self.seedPose_[0,i] - xSt)
+		        currPose_[0,i,1] = copy.deepcopy(self.seedPose_[1,i] - ySt)
+        	#The marking point is the center of the image
+	       	currPose_[0, 16, 0] = poseImSz / 2
+            	currPose_[0, 16, 1] = poseImSz / 2
 
-                cv2.imshow('imScale', imScale[0])
-                cv2.waitKey(1)
-                currPose = np.divide(currPose,1.002)
+                if False == initialPose:
+                        currPose = currPose_
+                #cv2.imshow('imScale', imScale[0])
+                #cv2.waitKey(1)
+                currPose = np.add(np.multiply(currPose, loopfactor), np.multiply(currPose_, 1.0-loopfactor))
 		#Predict Pose
 		for step in range(noIterations):
 		        currPose = self.proc_netPose(imScale, currPose)
