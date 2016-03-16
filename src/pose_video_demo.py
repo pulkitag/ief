@@ -43,7 +43,10 @@ def posevideo(input_video_name, output_video_name=None, output_csv_name=None, is
     else:
      fps = cap.get(cv2.CAP_PROP_FPS)
      outv.open(output_video_name, cv2.VideoWriter_fourcc('A', 'P', '4', '1'), fps, (np.size(frame, 1), np.size(frame, 0)), True) #, frame.shape, True)
-  pose,_ =  ief.predict(frame, bodyPt)
+  try:
+   pose, currPose =  ief.predict(frame, bodyPt, False, 1, True, 0, True, currPose)
+  except:
+   pose, currPose =  ief.predict(frame, bodyPt, False, 1, True, 0)
   cnt += 1
   print('Frame number: '+str(cnt))
   if(output_csv_name is not None and '' != output_csv_name):

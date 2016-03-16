@@ -22,6 +22,8 @@ import copy
 import scipy.io as sio
 import scipy.misc as scm
 import pdb
+import time
+import cv2
 
 LIST_SCALES = cfg.SCALE_LAMBDA  
 
@@ -51,6 +53,7 @@ def get_pose_net(isGPU=True, deviceId=0):
 	metaData = pickle.load(open(metaFile, 'r')) 
 	return net, metaData
 
+
 ##
 # Predicting Poses
 class PoseIEF(object):
@@ -68,73 +71,107 @@ class PoseIEF(object):
 		self.cropSz_   = cropSz
 		self.poseImSz_ = poseImSz
 
-	##
-	#Predict pose
-	def predict(self, imName='./test_images/mpii-test-079555750.jpg', 
-							bodyPt=(249,249), returnIm=False):
-		'''
-			imName  : image file name for which the pose needs to be predicted
-			bodyPt  : A point on the body of the person (torso) for whom the pose 
-							  is to be predicted
-			returnIm: If True, return the image also
-		'''
-		cropSz, poseImSz = self.cropSz_, self.poseImSz_
-		#Read the image
-                if(isinstance(imName, str)):
-                        im = scm.imread(imName)
-                else:
-                        im = imName
-		
+        def proc_fixedScale(self, im, cropSz, poseImSz, bodyPt, scaleIdx):
+                imScale  = np.zeros((cropSz, cropSz, 3))
+                oScale  = np.zeros((2))
+                oPos = np.zeros((2))
+                scale = LIST_SCALES[scaleIdx]
+		imScale, scs, crpPos = imu.centered_crop(cropSz, copy.deepcopy(im), bodyPt, scale, returnScale=True)
+		oScale = np.array(scs).reshape(1,2)	
+		oPos = np.array(crpPos).reshape(1,2)
+		xSt, ySt = (cropSz - poseImSz)/2, (cropSz - poseImSz)/2
+		xEn, yEn = xSt + poseImSz, ySt + poseImSz 
+		imScale  = imScale[ySt:yEn, xSt:xEn,:].reshape((1,poseImSz,poseImSz,3))
+                return imScale, xSt, ySt, oPos, oScale, scaleIdx	
+	
+
+
+        def proc_netScale(self, im, cropSz, poseImSz, bodyPt):
 		#Crop the image at different scales
+	        t = time.time()	
 		imData  = np.zeros((len(LIST_SCALES), cropSz, cropSz, 3))
 		scData  = np.zeros((len(LIST_SCALES), 2))
 		posData = np.zeros((len(LIST_SCALES), 2))
 		for i,s in enumerate(LIST_SCALES):
-			imData[i], scs, crpPos = imu.centered_crop(cropSz, copy.deepcopy(im), bodyPt, s, 
-												returnScale=True)
+			imData[i], scs, crpPos = imu.centered_crop(cropSz, copy.deepcopy(im), bodyPt, s, returnScale=True)
 			scData[i]  = np.array(scs).reshape(1,2)	
 			posData[i] = np.array(crpPos).reshape(1,2)
 	
+                print('crop time: {:.3f}s').format(time.time() - t)
 		#Use the scale net to find the best scale
-		scaleOp  = self.netScale_.forward(blobs=['fc-op'], data=imData)
+	        t = time.time()	
+                scaleOp  = self.netScale_.forward(blobs=['fc-op'], data=imData)
+                print('netScale time: {:.3f}s').format(time.time() - t)
 		scaleIdx = scaleOp['fc-op'].squeeze().argmax()
 		scale    = LIST_SCALES[scaleIdx]
 		#Scale to use to return the image in the original space
 		oScale   = scData[scaleIdx]
 		#Original location of the cropped image
 		oPos     = posData[scaleIdx]
-
 		#Prepare image for pose prediction	
 		imScale  = imData[scaleIdx]
+                print(scaleIdx)
+                print(len(imData))
 		xSt, ySt = (cropSz - poseImSz)/2, (cropSz - poseImSz)/2
 		xEn, yEn = xSt + poseImSz, ySt + poseImSz 
 		imScale  = imScale[ySt:yEn, xSt:xEn,:].reshape((1,poseImSz,poseImSz,3))
+                return imScale, xSt, ySt, oPos, oScale, scaleIdx	
 	
-		#Seed pose
-		currPose        = np.zeros((1,17,2,1)).astype(np.float32)
-		for i in range(16):
-			currPose[0,i,0] = copy.deepcopy(self.seedPose_[0,i] - xSt)
-			currPose[0,i,1] = copy.deepcopy(self.seedPose_[1,i] - ySt)
-		#The marking point is the center of the image
-		currPose[0, 16, 0] = poseImSz / 2
-		currPose[0, 16, 1] = poseImSz / 2
-	
+        def proc_netPose(self, imScale, currPose):
+	        t = time.time()	
 		#Dummy labels	
 		labels = np.zeros((1,16,2,1)).astype(np.float32)
+		poseOp = self.netPose_.forward(blobs=['cls3_fc'], image=imScale, kp_pos=copy.deepcopy(currPose), label=labels)
+                print('netPose time: {:.3f}s').format(time.time() - t)
+		kPred    = copy.deepcopy(poseOp['cls3_fc'].squeeze())
+		for i in range(16):
+			dx, dy = kPred[i], kPred[16 + i]
+                        #print(dx, dy)
+			currPose[0,i,0] = currPose[0,i,0] + self.mxStepSz_ * dx
+			currPose[0,i,1] = currPose[0,i,1] + self.mxStepSz_ * dy
+                return currPose
+        ##
+        #Predict pose
+	def predict(self, imName='./test_images/mpii-test-079555750.jpg', bodyPt=(249,249), returnIm=False, noIterations=4, fixedScale=False, scaleIdx=None, initialPose=False, currPose=None):
+                '''
+			imName  : image file name for which the pose needs to be predicted
+			bodyPt  : A point on the body of the person (torso) for whom the pose 
+							  is to be predicted
+			returnIm: If True, return the image also
+		'''
+                tt = time.time()
+		cropSz, poseImSz = self.cropSz_, self.poseImSz_
+		#Read the image
+                if(isinstance(imName, str)):
+                        im = scm.imread(imName)
+                else:
+                        im = imName
+	        	
+                if True == fixedScale:
+                        imScale, xSt, ySt, oPos, oScale, scaleIdx = self.proc_fixedScale(im, cropSz, poseImSz, bodyPt, scaleIdx)
+                else:
+                        imScale, xSt, ySt, oPos, oScale, scaleIdx = self.proc_netScale(im, cropSz, poseImSz, bodyPt)
+                
+                if False == initialPose:
+	        	#Seed pose
+	        	currPose        = np.zeros((1,17,2,1)).astype(np.float32)
+	        	for i in range(16):
+		        	currPose[0,i,0] = copy.deepcopy(self.seedPose_[0,i] - xSt)
+			        currPose[0,i,1] = copy.deepcopy(self.seedPose_[1,i] - ySt)
+        		#The marking point is the center of the image
+	        	currPose[0, 16, 0] = poseImSz / 2
+	        	currPose[0, 16, 1] = poseImSz / 2
 
+                cv2.imshow('imScale', imScale[0])
+                cv2.waitKey(1)
+                currPose = np.divide(currPose,1.002)
 		#Predict Pose
-		for step in range(4):
-			poseOp = self.netPose_.forward(blobs=['cls3_fc'], image=imScale,
-							 kp_pos=copy.deepcopy(currPose), label=labels)
-			kPred    = copy.deepcopy(poseOp['cls3_fc'].squeeze())
-			for i in range(16):
-				dx, dy = kPred[i], kPred[16 + i]
-				currPose[0,i,0] = currPose[0,i,0] + self.mxStepSz_ * dx
-				currPose[0,i,1] = currPose[0,i,1] + self.mxStepSz_ * dy
-		
+		for step in range(noIterations):
+		        currPose = self.proc_netPose(imScale, currPose)
 		#Convert the pose in the original image coordinated
 		origPose = (currPose.squeeze() +  np.array([xSt, ySt]).reshape(1,2)) * oScale + oPos
-
+                
+                print('predict time: {:.3f}s').format(time.time() - tt)
 		if returnIm:
 			#return origPose, copy.deepcopy(currPose), imScale[0]
 			return origPose, im
