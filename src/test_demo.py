@@ -71,6 +71,15 @@ class PoseIEF(object):
 		self.cropSz_   = cropSz
 		self.poseImSz_ = poseImSz
 
+
+        def calc_scaleIdx_from_bbox(self, width, height):
+                cropSz = self.cropSz_
+                hscale = cropSz / height
+                wscale = cropSz / width
+		for i,s in enumerate(LIST_SCALES):
+                        if s < hscale or s < wscale:
+                                return s
+
         def proc_fixedScale(self, im, cropSz, poseImSz, bodyPt, scaleIdx):
                 imScale  = np.zeros((cropSz, cropSz, 3))
                 oScale  = np.zeros((2))
