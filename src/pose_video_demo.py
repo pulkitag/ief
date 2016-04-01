@@ -76,7 +76,7 @@ def sameorder(objs, objs_old):
    objs_set[idx] = 1
  return objs_new
 
-def posevideo(input_video_name, output_video_name=None, output_csv_name=None, isGPU=True, deviceId=0, bodyPt=[600, 400], iterations=4, fixedScale=False, scaleIdx=0, fbfactor=0.0, thresh=0.9, detinterv=10, bodyPts= [600, 400]):
+def posevideo(input_video_name, output_video_name=None, output_csv_name=None, isGPU=True, deviceId=0, bodyPt=[600, 400], iterations=4, fixedScale=False, scaleIdx=0, fbfactor=0.0, thresh=0.9, detinterv=10, bodyPts= [600, 400], maxhumans=4):
  """ processing the video """
  # Find OpenCV version
  global gnet
@@ -125,6 +125,7 @@ def posevideo(input_video_name, output_video_name=None, output_csv_name=None, is
     read_bodyPts = False
 
   humans = sameorder(humans, humans_old)
+  humans = humans[0:maxhumans]
   humans_old = humans
   for i, human in enumerate(humans):
    bodyPt = [human.x_center, human.y_center]
@@ -177,6 +178,7 @@ def parse_args():
  parser.add_argument('--thresh', dest='thresh', help='Fractional value between 0.0 and 1.0 that specifies the selectivity of human detection.', default=0.9, type=float)
  parser.add_argument('--detinterv', dest='detinterv', help='Natural value that specifies every how much images human detection is done.', default=10, type=int)
  parser.add_argument('--net', dest='net', help='The name of network used for human detection.', default='vgg16', type=str)
+ parser.add_argument('--maxhumans', dest='maxhumans', help='Natural value that specifies maximum number of tracked humans.', default=4, type=int)
  
 
  if len(sys.argv) == 1:
@@ -202,5 +204,5 @@ if __name__ == '__main__':
  frargs.demo_net = args.net
  frargs.gpu_id = args.deviceId
  gnet = detectcore.init(frargs)
- posevideo(args.input_video_name, args.output_video_name, args.output_csv_name, isGPU=args.isGPU, deviceId=args.deviceId, bodyPt=[args.x_bodyPt, args.y_bodyPt], iterations=args.iterations, fixedScale=args.fixedScale, scaleIdx=args.scaleIdx, fbfactor=args.fbfactor, thresh=args.thresh, detinterv=args.detinterv, bodyPts=args.bodyPts)
+ posevideo(args.input_video_name, args.output_video_name, args.output_csv_name, isGPU=args.isGPU, deviceId=args.deviceId, bodyPt=[args.x_bodyPt, args.y_bodyPt], iterations=args.iterations, fixedScale=args.fixedScale, scaleIdx=args.scaleIdx, fbfactor=args.fbfactor, thresh=args.thresh, detinterv=args.detinterv, bodyPts=args.bodyPts, maxhumans=args.maxhumans)
 
