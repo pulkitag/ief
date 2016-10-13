@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# vim: set shiftwidth=1
 """
 /************************************************************************
 Copyright (c) 2016, Stefan Helmert
@@ -127,6 +128,8 @@ def posevideo(input_video_name, output_video_name=None, output_csv_name=None, is
   humans = sameorder(humans, humans_old)
   humans = humans[0:maxhumans]
   humans_old = humans
+  cnt += 1
+  print('Frame number: '+str(cnt))
   for i, human in enumerate(humans):
    bodyPt = [human.x_center, human.y_center]
    try:
@@ -140,8 +143,6 @@ def posevideo(input_video_name, output_video_name=None, output_csv_name=None, is
     currPoses[i] = currPose
    except:
     currPoses.append(currPose)
-   cnt += 1
-   print('Frame number: '+str(cnt))
    poses.append(pose)
    if(output_csv_name is not None and '' != output_csv_name):
     pose_arr = np.append([cnt ,i], pose)
